@@ -1,0 +1,234 @@
+openapi: 3.0.3
+info:
+  title: SAuth API
+  version: 1.0.0
+  description: API specification for SAuth authentication flow
+servers:
+  - url: https://sauth.example.com/api
+tags:
+  - name: Client
+    description: APIs for client backend
+  - name: SAuth Web
+    description: APIs for SAuth Web (QR Page)
+  - name: SAuth Mobile
+    description: APIs for SAuth Mobile app
+paths:
+  # --- Client APIs ---
+  /client/register:
+    post:
+      tags: [Client]
+      summary: Register a new client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                contact:
+                  type: string
+              required:
+                - name
+      responses:
+        "200":
+          description: Registered client
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  client_id:
+                    type: string
+  /client/settings:
+    post:
+      tags: [Client]
+      summary: Set client settings (enable DataDome/Recaptcha)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                client_id:
+                  type: string
+                enable_datadome:
+                  type: boolean
+                enable_recaptcha:
+                  type: boolean
+              required:
+                - client_id
+      responses:
+        "200":
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+  /client/verification-request:
+    post:
+      tags: [Client]
+      summary: Send verification request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                client_id:
+                  type: string
+                user_info:
+                  type: object
+              required:
+                - client_id
+      responses:
+        "200":
+          description: Verification request created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                  request_id:
+                    type: string
+  /client/webhook:
+    post:
+      tags: [Client]
+      summary: Webhook for client to receive verification result
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id:
+                  type: string
+                status:
+                  type: string
+                user_id:
+                  type: string
+              required:
+                - request_id
+                - status
+      responses:
+        "200":
+          description: Webhook received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  # --- SAuth Web APIs ---
+  /sauthweb/qrcode:
+    post:
+      tags: [SAuth Web]
+      summary: SAuthWeb requests QR code from SAuthBackend
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id:
+                  type: string
+                secure_token:
+                  type: string
+              required:
+                - request_id
+      responses:
+        "200":
+          description: QR code data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                  expired_time:
+                    type: string
+                  nonce:
+                    type: string
+                  allow_retry:
+                    type: boolean
+
+  # --- SAuth Mobile APIs ---
+  /mobile/register-device:
+    post:
+      tags: [SAuth Mobile]
+      summary: SAuth Mobile registers a new device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                public_key:
+                  type: string
+                signature:
+                  type: string
+                device_info:
+                  type: object
+              required:
+                - public_key
+                - signature
+      responses:
+        "200":
+          description: Device registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device_id:
+                    type: string
+  /mobile/verify-qrcode:
+    post:
+      tags: [SAuth Mobile]
+      summary: SAuth Mobile verifies QR code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                session_id:
+                  type: string
+                nonce:
+                  type: string
+                signature:
+                  type: string
+                device_id:
+                  type: string
+              required:
+                - session_id
+                - nonce
+                - signature
+                - device_id
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
