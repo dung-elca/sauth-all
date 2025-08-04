@@ -48,6 +48,9 @@ sequenceDiagram
     alt QR code expired
         SAuthWeb->>SAuthBackend: Auto-retry to generate new QR code
     end
+    alt session_id invalid
+        SAuthBackend->>ClientApp: Webhook to Client App with fail status immediately
+    end
     SAuthBackend->>SAuthWeb: Return QR code data
     SAuthWeb->>User: Display QR code
     User->>SAuthApp: 6. User opens SAuth App on mobile
