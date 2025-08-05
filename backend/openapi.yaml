@@ -41,10 +41,23 @@ paths:
                 properties:
                   client_id:
                     type: string
-  /client/settings:
+                  client_secret:
+                    type: string
+  /client/config:
     post:
       tags: [Client]
-      summary: Set client settings (enable DataDome/Recaptcha)
+      summary: Set client config (enable DataDome/Recaptcha, api_key)
+      parameters:
+        - name: client_id
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: client_secret
+          in: header
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -52,14 +65,12 @@ paths:
             schema:
               type: object
               properties:
-                client_id:
+                api_key:
                   type: string
                 enable_datadome:
                   type: boolean
                 enable_recaptcha:
                   type: boolean
-              required:
-                - client_id
       responses:
         "200":
           description: Settings updated
@@ -74,6 +85,17 @@ paths:
     post:
       tags: [Client]
       summary: Send verification request
+      parameters:
+        - name: client_id
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: client_secret
+          in: header
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -81,12 +103,15 @@ paths:
             schema:
               type: object
               properties:
-                client_id:
-                  type: string
-                user_info:
+                allow_refresh:
+                  type: boolean
+                max_try:
+                  type: number
+                metadata:
                   type: object
               required:
-                - client_id
+                - allow_refresh
+                - max_try
       responses:
         "200":
           description: Verification request created
@@ -103,6 +128,12 @@ paths:
     post:
       tags: [Client]
       summary: Webhook for client to receive verification result
+      parameters:
+        - name: api_key
+          in: header
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -114,11 +145,14 @@ paths:
                   type: string
                 status:
                   type: string
-                user_id:
+                device_id:
                   type: string
+                metadata:
+                  type: object
               required:
                 - request_id
                 - status
+                - device_id
       responses:
         "200":
           description: Webhook received
@@ -127,27 +161,20 @@ paths:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
+                  message:
+                    type: string
 
   # --- SAuth Web APIs ---
-  /sauthweb/qrcode:
-    post:
+  /sauthweb/qrcode/{request_id}:
+    get:
       tags: [SAuth Web]
       summary: SAuthWeb requests QR code from SAuthBackend
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                request_id:
-                  type: string
-                secure_token:
-                  type: string
-              required:
-                - request_id
+      parameters:
+        - name: request_id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: QR code data
