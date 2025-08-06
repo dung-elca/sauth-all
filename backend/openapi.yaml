@@ -155,7 +155,7 @@ paths:
   /qrcode/{request_id}:
     get:
       tags: [SAuth Web]
-      summary: SAuthWeb requests QR code from SAuthBackend
+      summary: Get QR code status (không tạo session mới)
       parameters:
         - name: request_id
           in: path
@@ -164,7 +164,7 @@ paths:
             type: string
       responses:
         "200":
-          description: QR code data
+          description: QR code status
           content:
             application/json:
               schema:
@@ -176,8 +176,77 @@ paths:
                     type: string
                   nonce:
                     type: string
-                  allow_retry:
+                  status:
+                    type: string
+                    enum: [pending, verified]
+                  canRetry:
                     type: boolean
+        "404":
+          description: Request not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "410":
+          description: Request expired and cannot retry
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /qrcode/{request_id}/refresh:
+    post:
+      tags: [SAuth Web]
+      summary: Refresh QR code (create new session and reduce retry count by 1)
+      parameters:
+        - name: request_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: New QR code session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                  expired_time:
+                    type: string
+                  nonce:
+                    type: string
+                  status:
+                    type: string
+                    enum: [pending, verified]
+                  canRetry:
+                    type: boolean
+        "404":
+          description: Request not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "410":
+          description: Cannot retry anymore
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
 
   # --- SAuth Mobile APIs ---
   /mobile/register-device:

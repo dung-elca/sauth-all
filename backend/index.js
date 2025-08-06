@@ -123,7 +123,8 @@ app.get("/verify/:request_id", (req, res) => {
 });
 
 // --- SAuth Web APIs ---
-app.get("/request/:request_id/status", (req, res) => {
+
+app.get("/qrcode/:request_id", (req, res) => {
   const { request_id } = req.params;
 
   const status = db.getVerificationRequestStatus(request_id);
@@ -133,28 +134,33 @@ app.get("/request/:request_id/status", (req, res) => {
     session_id: status.session_id,
     expired_time: status.expired_time,
     nonce: status.nonce,
+    status: status.status, // pending hoặc verified
     canRetry: status.canRetry,
-    status: status.status,
-    device_id: status.device_id,
   });
 });
 
-app.get("/request/:request_id/qrcode", (req, res) => {
+app.post("/qrcode/:request_id/refresh", (req, res) => {
   const { request_id } = req.params;
 
-  const session = db.getNewVerificationRequestSession(request_id);
-  if (!session) return res.status(404).json({ error: "Request not found" });
+  const status = db.getVerificationRequestStatus(request_id);
+  if (!status) return res.status(404).json({ error: "Request not found" });
 
-  // Check if expired
-  if (new Date(session.expired_time) < new Date()) {
-    return res.status(410).json({ error: "Request expired" });
+  if (!status.canRetry) {
+    return res.status(410).json({ error: "Cannot retry anymore" });
+  }
+
+  // Generate new session for retry
+  const newSession = db.getNewVerificationRequestSession(request_id);
+  if (!newSession) {
+    return res.status(410).json({ error: "Cannot generate new session" });
   }
 
   res.json({
-    session_id: session.session_id,
-    expired_time: session.expired_time,
-    nonce: session.nonce,
-    canRetry: session.canRetry,
+    session_id: newSession.session_id,
+    expired_time: newSession.expired_time,
+    nonce: newSession.nonce,
+    status: newSession.status, // pending hoặc verified của request
+    canRetry: newSession.canRetry,
   });
 });
 

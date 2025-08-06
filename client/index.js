@@ -94,8 +94,8 @@ async function verifyRequestToApi(lot_id) {
   const response = await axios.post(
     `${apiUrl}/verify-request`,
     {
-      max_try: 5,
-      expired_duration: 30,
+      max_try: 2,
+      expired_duration: 10,
       content_id: "your_content_id_here",
       metadata: {
         lot_id,

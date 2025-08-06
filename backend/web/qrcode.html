@@ -92,22 +92,6 @@
         margin-top: 15px;
       }
 
-      .refresh-btn {
-        background: #667eea;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        margin-top: 15px;
-        display: none;
-      }
-
-      .refresh-btn:hover {
-        background: #5a67d8;
-      }
-
       .instructions {
         margin-top: 25px;
         padding-top: 25px;
@@ -152,10 +136,6 @@
       <div id="status" class="status loading">Loading QR code...</div>
 
       <div id="timer" class="timer"></div>
-
-      <button id="refreshBtn" class="refresh-btn" onclick="refreshQR()">
-        Refresh QR Code
-      </button>
 
       <div class="instructions">
         <strong>How to verify:</strong><br />
@@ -255,10 +235,10 @@
         }
 
         startStatusCheck() {
-          // Check status every 3 seconds
+          // Check status every 1 second
           this.refreshInterval = setInterval(() => {
             this.checkVerificationStatus();
-          }, 3000);
+          }, 1000);
         }
 
         async checkVerificationStatus() {
@@ -266,7 +246,7 @@
             const response = await fetch(`/qrcode/${this.requestId}`);
 
             if (response.status === 410) {
-              this.handleExpired();
+              this.handleExpiredFinal();
               return;
             }
 
@@ -275,24 +255,83 @@
             }
 
             const data = await response.json();
-            // If session_id changed, it means verification was completed
-            if (data.session_id !== this.sessionData.session_id) {
+
+            // Check if verified
+            if (data.status === "verified") {
               this.handleSuccess();
+              return;
+            }
+
+            // Check if expired by time (UI tự check expired_time)
+            const now = new Date();
+            const expiredTime = new Date(data.expired_time);
+
+            if (now > expiredTime) {
+              if (data.canRetry) {
+                this.handleExpiredWithRetry();
+              } else {
+                this.handleExpiredFinal();
+              }
             }
           } catch (error) {
             console.error("Error checking status:", error);
           }
         }
+        async refreshQRCode() {
+          try {
+            this.showStatus("Refreshing QR code...", "loading");
 
-        handleExpired() {
+            const response = await fetch(`/qrcode/${this.requestId}/refresh`, {
+              method: "POST",
+            });
+
+            if (response.status === 410) {
+              this.handleExpiredFinal();
+              return;
+            }
+
+            if (!response.ok) {
+              throw new Error("Failed to refresh QR code");
+            }
+
+            const newData = await response.json();
+
+            // Check if verified trong lúc refresh
+            if (newData.status === "verified") {
+              this.handleSuccess();
+              return;
+            }
+
+            this.sessionData = newData;
+            await this.generateQRCode();
+            this.startCountdown();
+            this.startStatusCheck();
+            this.showStatus(
+              "QR code refreshed - Scan with SAuth mobile app",
+              "loading"
+            );
+          } catch (error) {
+            console.error("Error refreshing QR code:", error);
+            this.showError("Failed to refresh QR code");
+          }
+        }
+
+        handleExpiredWithRetry() {
           this.clearIntervals();
-          this.showStatus("QR code expired", "expired");
+          this.showStatus("QR code expired - Refreshing...", "expired");
           document.getElementById("timer").textContent = "";
 
-          if (this.sessionData.allow_retry) {
-            document.getElementById("refreshBtn").style.display =
-              "inline-block";
-          }
+          // Auto refresh sau 2 giây để user thấy thông báo
+          setTimeout(() => {
+            this.refreshQRCode();
+          }, 2000);
+        }
+
+        handleExpiredFinal() {
+          this.clearIntervals();
+          this.showStatus("QR code expired - Cannot retry", "expired");
+          document.getElementById("timer").textContent = "";
+          this.blurQRCode();
         }
 
         handleSuccess() {
@@ -300,6 +339,7 @@
           this.showStatus("✓ Authentication successful!", "success");
           document.getElementById("timer").textContent =
             "You can close this window";
+          this.blurQRCode();
 
           // Auto close after 3 seconds if in popup
           if (window.opener) {
@@ -307,6 +347,13 @@
               window.close();
             }, 3000);
           }
+        }
+
+        blurQRCode() {
+          const qrContainer = document.getElementById("qrcode");
+          qrContainer.style.filter = "blur(5px)";
+          qrContainer.style.opacity = "0.5";
+          qrContainer.style.pointerEvents = "none";
         }
 
         showStatus(message, type) {
@@ -330,10 +377,6 @@
             clearInterval(this.refreshInterval);
           }
         }
-      }
-
-      function refreshQR() {
-        location.reload();
       }
 
       // Initialize when page loads
