@@ -92,7 +92,7 @@ async function verifyRequestToApi(lot_id) {
   const clientId = config.clientId;
   const clientSecret = config.clientSecret;
   const response = await axios.post(
-    `${apiUrl}/client/verify-request`,
+    `${apiUrl}/verify-request`,
     {
       allow_refresh: true,
       max_try: 5,

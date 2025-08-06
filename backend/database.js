@@ -107,6 +107,17 @@ export function getAllClients() {
   return db.clients;
 }
 
+export function deleteClient(client_id) {
+  const db = loadDB();
+  const clientIndex = db.clients.findIndex((c) => c.client_id === client_id);
+  if (clientIndex !== -1) {
+    db.clients.splice(clientIndex, 1);
+    saveDB(db);
+    return true;
+  }
+  return false;
+}
+
 // Verification request operations
 export function createVerificationRequest(
   client_id,

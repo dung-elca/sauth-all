@@ -34,17 +34,9 @@ class SAuthAdmin {
       this.closeModal(document.getElementById("clientModal"));
     });
 
-    document.getElementById("configCancelBtn").addEventListener("click", () => {
-      this.closeModal(document.getElementById("configModal"));
-    });
-
     // Form submissions
     document.getElementById("clientForm").addEventListener("submit", (e) => {
       this.handleClientSubmit(e);
-    });
-
-    document.getElementById("configForm").addEventListener("submit", (e) => {
-      this.handleConfigSubmit(e);
     });
 
     // Close modal when clicking outside
@@ -125,11 +117,6 @@ class SAuthAdmin {
                     }</span></div>
                 </div>
                 <div class="client-actions">
-                    <button class="btn btn-warning" onclick="admin.showConfigModal('${
-                      client.client_id
-                    }')">
-                        Configure
-                    </button>
                     <button class="btn btn-primary" onclick="admin.editClient('${
                       client.client_id
                     }')">
@@ -176,25 +163,6 @@ class SAuthAdmin {
     modal.style.display = "block";
   }
 
-  showConfigModal(clientId) {
-    const modal = document.getElementById("configModal");
-    const client = this.clients.find((c) => c.client_id === clientId);
-
-    if (client) {
-      document.getElementById("configClientId").value = client.client_id;
-      document.getElementById("configClientSecret").value =
-        client.client_secret;
-      document.getElementById("configWebhookUrl").value =
-        client.webhook_url || "";
-      document.getElementById("configEnableDatadome").checked =
-        client.enable_datadome || false;
-      document.getElementById("configEnableRecaptcha").checked =
-        client.enable_recaptcha || false;
-    }
-
-    modal.style.display = "block";
-  }
-
   closeModal(modal) {
     modal.style.display = "none";
   }
@@ -224,42 +192,6 @@ class SAuthAdmin {
     } catch (error) {
       console.error("Error saving client:", error);
       this.showNotification("Error saving client", "error");
-    }
-  }
-
-  async handleConfigSubmit(e) {
-    e.preventDefault();
-
-    const clientId = document.getElementById("configClientId").value;
-    const clientSecret = document.getElementById("configClientSecret").value;
-    const configData = {
-      webhook_url: document.getElementById("configWebhookUrl").value,
-      enable_datadome: document.getElementById("configEnableDatadome").checked,
-      enable_recaptcha: document.getElementById("configEnableRecaptcha")
-        .checked,
-    };
-
-    try {
-      const response = await fetch("/client", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          client_id: clientId,
-        },
-        body: JSON.stringify(configData),
-      });
-
-      if (response.ok) {
-        this.showNotification("Configuration updated successfully", "success");
-        this.closeModal(document.getElementById("configModal"));
-        this.loadClients();
-      } else {
-        const error = await response.json();
-        this.showNotification(error.error || "Configuration failed", "error");
-      }
-    } catch (error) {
-      console.error("Error updating config:", error);
-      this.showNotification("Error updating configuration", "error");
     }
   }
 
@@ -316,10 +248,29 @@ class SAuthAdmin {
 
   deleteClient(clientId) {
     if (confirm("Are you sure you want to delete this client?")) {
-      // Call DELETE API when implemented
-      // For now, just reload the client list
-      this.loadClients();
-      this.showNotification("Client deleted successfully", "success");
+      this.callDeleteAPI(clientId);
+    }
+  }
+
+  async callDeleteAPI(clientId) {
+    try {
+      const response = await fetch(`/client/${clientId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        this.showNotification("Client deleted successfully", "success");
+        this.loadClients();
+      } else {
+        const error = await response.json();
+        this.showNotification(
+          error.error || "Failed to delete client",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting client:", error);
+      this.showNotification("Error deleting client", "error");
     }
   }
 

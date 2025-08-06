@@ -59,6 +59,26 @@ app.get("/client", (req, res) => {
   res.json(db.getAllClients());
 });
 
+app.delete("/client/:clientId", (req, res) => {
+  const { clientId } = req.params;
+
+  if (!clientId) {
+    return res.status(400).json({ error: "Missing client_id" });
+  }
+
+  const client = db.findClientById(clientId);
+  if (!client) {
+    return res.status(404).json({ error: "Client not found" });
+  }
+
+  const success = db.deleteClient(clientId);
+  if (success) {
+    res.json({ success: true, message: "Client deleted successfully" });
+  } else {
+    res.status(500).json({ error: "Failed to delete client" });
+  }
+});
+
 app.post("/verify-request", (req, res) => {
   const clientId = req.header("client_id");
   const clientSecret = req.header("client_secret");
