@@ -1,0 +1,28 @@
+{
+  "clients": [
+    {
+      "client_id": "ytjbIBZGn6xGwv3lZOBd2s7uG2aXyMCgvMFufUTPWRNOy9SkuxPu32ac1k8tbSzI",
+      "client_secret": "bJqea7UZ70iTCXHzhEJimWXZainkCeyUMN57PEBydQFPqw7Kk5vdaPREwK9hGFY5",
+      "api_key": "7M7kzw9xu2QF3SZ4bN1mJHAKe1Oj6FCD",
+      "name": "DEMO",
+      "contact": "",
+      "created_at": "2025-08-05T11:25:27.149Z",
+      "enable_datadome": true,
+      "enable_recaptcha": true,
+      "webhook_url": "http://localhost:3001"
+    },
+    {
+      "client_id": "5Q2kcXSgGMtWp03NDl8W4IudbTrJxae05FlUm7NExT11qtwXEXE7YgtHDZCexocm",
+      "client_secret": "Gbf3GYzPSscv4qODTjZQ4e1K8L6HpDDpPWPwbdn4JHeQQL2ECbT4XifITiqPc1S3",
+      "api_key": "9HaLnkSqNpucV52a8Iloxhn17UfZX5A5",
+      "name": "Demo1",
+      "contact": "No",
+      "created_at": "2025-08-05T11:27:31.134Z",
+      "enable_datadome": false,
+      "enable_recaptcha": false,
+      "webhook_url": "http://localhost:3001"
+    }
+  ],
+  "devices": [],
+  "verification_requests": []
+}

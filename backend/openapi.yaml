@@ -46,7 +46,7 @@ paths:
   /client/config:
     post:
       tags: [Client]
-      summary: Set client config (enable DataDome/Recaptcha, api_key)
+      summary: Set client config
       parameters:
         - name: client_id
           in: header
@@ -65,7 +65,7 @@ paths:
             schema:
               type: object
               properties:
-                api_key:
+                webhook_url:
                   type: string
                 enable_datadome:
                   type: boolean
@@ -81,10 +81,10 @@ paths:
                 properties:
                   success:
                     type: boolean
-  /client/verification-request:
+  /client/verify-request:
     post:
       tags: [Client]
-      summary: Send verification request
+      summary: Send verify request
       parameters:
         - name: client_id
           in: header
@@ -105,12 +105,15 @@ paths:
               properties:
                 allow_refresh:
                   type: boolean
+                expired_duration:
+                  type: number
                 max_try:
                   type: number
                 metadata:
                   type: object
               required:
                 - allow_refresh
+                - expired_duration
                 - max_try
       responses:
         "200":
