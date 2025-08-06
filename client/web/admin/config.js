@@ -39,7 +39,6 @@ function openModal() {
 
 function closeModal() {
   document.getElementById("configModal").style.display = "none";
-  document.getElementById("configMsg").textContent = "";
 }
 
 async function renderConfigPage() {
@@ -72,7 +71,8 @@ document.getElementById("configForm").onsubmit = async function (e) {
   const clientSecret = document.getElementById("clientSecret").value;
   const apiKey = document.getElementById("apiKey").value;
   const msg = document.getElementById("configMsg");
-  msg.textContent = "";
+  msg.className = "config-msg";
+  msg.innerHTML = "";
   try {
     const res = await fetch("/config", {
       method: "POST",
@@ -80,19 +80,32 @@ document.getElementById("configForm").onsubmit = async function (e) {
       body: JSON.stringify({ clientId, clientSecret, apiKey }),
     });
     const result = await res.json();
+    closeModal();
     if (res.ok) {
-      msg.style.color = "green";
-      msg.textContent = result.message;
+      msg.classList.add("show", "success");
+      msg.innerHTML = '<span class="icon">✔️</span>' + result.message;
+      renderConfigPage();
       setTimeout(() => {
-        closeModal();
-        renderConfigPage();
-      }, 1500);
+        msg.classList.remove("show", "success");
+        msg.innerHTML = "";
+      }, 2000);
     } else {
-      msg.style.color = "red";
-      msg.textContent = result.error || "Failed to save config.";
+      msg.classList.add("show", "error");
+      msg.innerHTML =
+        '<span class="icon">❌</span>' +
+        (result.error || "Failed to save config.");
+      setTimeout(() => {
+        msg.classList.remove("show", "error");
+        msg.innerHTML = "";
+      }, 2500);
     }
   } catch (err) {
-    msg.style.color = "red";
-    msg.textContent = "Network error.";
+    closeModal();
+    msg.classList.add("show", "error");
+    msg.innerHTML = '<span class="icon">❌</span>Network error.';
+    setTimeout(() => {
+      msg.classList.remove("show", "error");
+      msg.innerHTML = "";
+    }, 2500);
   }
 };
