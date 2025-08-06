@@ -115,35 +115,50 @@ export function deleteClient(client_id) {
 }
 
 // Verification request operations
-export function createVerificationRequest(
+export function getVerificationRequest(
   client_id,
   allow_refresh,
   max_try,
   expired_duration,
+  content_id,
   metadata
 ) {
   const db = loadDB();
   const client = db.clients.find((c) => c.client_id === client_id);
   if (!client) return null;
+  const existedRequest = db.verification_requests.find(
+    (r) => r.content_id === content_id
+  );
+  if (existedRequest) {
+    existedRequest.request_id = "req_" + randomString(32);
+    existedRequest.allow_refresh = allow_refresh;
+    existedRequest.max_try = max_try;
+    existedRequest.expired_duration = expired_duration;
+    existedRequest.metadata = metadata;
+    existedRequest.updated_at = new Date().toISOString();
+    saveDB(db);
+    return existedRequest;
+  } else {
+    const request = {
+      request_id: "req_" + randomString(32),
+      client_id,
+      device_id: null,
+      status: "pending",
+      created_at: new Date().toISOString(),
+      allow_refresh,
+      max_try,
+      expired_duration,
+      content_id,
+      metadata,
+    };
 
-  const request = {
-    request_id: "req_" + randomString(32),
-    client_id,
-    allow_refresh,
-    expired_duration,
-    metadata,
-    max_try,
-    device_id: null,
-    status: "pending",
-    created_at: new Date().toISOString(),
-  };
-
-  db.verification_requests.push(request);
-  saveDB(db);
-  return request;
+    db.verification_requests.push(request);
+    saveDB(db);
+    return request;
+  }
 }
 
-export function genSessionAndGetVerificationRequest(request_id) {
+export function getVerificationRequestSession(request_id) {
   const db = loadDB();
   const requestIndex = db.verification_requests.findIndex(
     (r) => r.request_id === request_id

@@ -81,7 +81,8 @@ app.delete("/client/:clientId", (req, res) => {
 app.post("/verify-request", (req, res) => {
   const clientId = req.header("client_id");
   const clientSecret = req.header("client_secret");
-  const { allow_refresh, max_try, expired_duration, metadata } = req.body;
+  const { allow_refresh, max_try, expired_duration, content_id, metadata } =
+    req.body;
 
   if (!clientId || !clientSecret)
     return res
@@ -98,15 +99,17 @@ app.post("/verify-request", (req, res) => {
   if (
     typeof allow_refresh !== "boolean" ||
     typeof max_try !== "number" ||
-    typeof expired_duration !== "number"
+    typeof expired_duration !== "number" ||
+    typeof content_id !== "string"
   )
     return res.status(400).json({ error: "Invalid body" });
 
-  const request = db.createVerificationRequest(
+  const request = db.getVerificationRequest(
     clientId,
     allow_refresh,
     max_try,
     expired_duration,
+    content_id,
     metadata
   );
   if (!request) return res.status(404).json({ error: "Client not found" });
@@ -126,7 +129,7 @@ app.get("/verify/:request_id", (req, res) => {
 app.get("/qrcode/:request_id", (req, res) => {
   const { request_id } = req.params;
 
-  const request = db.genSessionAndGetVerificationRequest(request_id);
+  const request = db.getVerificationRequestSession(request_id);
   if (!request) return res.status(404).json({ error: "Request not found" });
 
   // Check if expired

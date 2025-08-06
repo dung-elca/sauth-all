@@ -97,6 +97,7 @@ async function verifyRequestToApi(lot_id) {
       allow_refresh: true,
       max_try: 5,
       expired_duration: 30,
+      content_id: "your_content_id_here",
       metadata: {
         lot_id,
       },
