@@ -2,6 +2,7 @@ import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import path from "path";
 import * as db from "./database.js";
 dotenv.config();
 
@@ -111,8 +112,13 @@ app.post("/verify-request", (req, res) => {
   });
 });
 
+// Serve verification page
+app.get("/verify/:request_id", (req, res) => {
+  res.sendFile(path.join(process.cwd(), "web", "verify.html"));
+});
+
 // --- SAuth Web APIs ---
-app.get("/sauthweb/qrcode/:request_id", (req, res) => {
+app.get("/qrcode/:request_id", (req, res) => {
   const { request_id } = req.params;
 
   const request = db.genSessionAndGetVerificationRequest(request_id);

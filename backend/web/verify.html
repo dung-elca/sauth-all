@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAuth Verification</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container {
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+      }
+
+      .logo {
+        font-size: 28px;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 16px;
+      }
+
+      .qr-container {
+        margin: 30px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 2px dashed #e0e0e0;
+      }
+
+      #qrcode {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 200px;
+      }
+
+      .status {
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 8px;
+        font-weight: 500;
+      }
+
+      .status.loading {
+        background: #e3f2fd;
+        color: #1976d2;
+      }
+
+      .status.error {
+        background: #ffebee;
+        color: #d32f2f;
+      }
+
+      .status.expired {
+        background: #fff3e0;
+        color: #f57c00;
+      }
+
+      .status.success {
+        background: #e8f5e8;
+        color: #2e7d32;
+      }
+
+      .timer {
+        font-size: 14px;
+        color: #666;
+        margin-top: 15px;
+      }
+
+      .refresh-btn {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 15px;
+        display: none;
+      }
+
+      .refresh-btn:hover {
+        background: #5a67d8;
+      }
+
+      .instructions {
+        margin-top: 25px;
+        padding-top: 25px;
+        border-top: 1px solid #e0e0e0;
+        font-size: 14px;
+        color: #666;
+        line-height: 1.5;
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo">SAuth</div>
+      <div class="subtitle">Secure Authentication</div>
+
+      <div class="qr-container">
+        <div id="qrcode">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+      <div id="status" class="status loading">Loading QR code...</div>
+
+      <div id="timer" class="timer"></div>
+
+      <button id="refreshBtn" class="refresh-btn" onclick="refreshQR()">
+        Refresh QR Code
+      </button>
+
+      <div class="instructions">
+        <strong>How to verify:</strong><br />
+        1. Open SAuth mobile app<br />
+        2. Scan this QR code<br />
+        3. Approve the authentication request
+      </div>
+    </div>
+
+    <script>
+      class SAuthVerify {
+        constructor() {
+          this.requestId = this.getRequestIdFromURL();
+          this.sessionData = null;
+          this.countdownInterval = null;
+          this.refreshInterval = null;
+
+          if (!this.requestId) {
+            this.showError("Invalid verification link");
+            return;
+          }
+
+          this.loadQRCode();
+        }
+
+        getRequestIdFromURL() {
+          const pathParts = window.location.pathname.split("/");
+          return pathParts[pathParts.length - 1];
+        }
+
+        async loadQRCode() {
+          try {
+            this.showStatus("Loading QR code...", "loading");
+
+            const response = await fetch(`/qrcode/${this.requestId}`);
+
+            if (!response.ok) {
+              if (response.status === 404) {
+                throw new Error("Verification request not found");
+              } else if (response.status === 410) {
+                throw new Error("Verification request expired");
+              }
+              throw new Error("Failed to load QR code");
+            }
+
+            this.sessionData = await response.json();
+            await this.generateQRCode();
+            this.startCountdown();
+            this.startStatusCheck();
+          } catch (error) {
+            console.error("Error loading QR code:", error);
+            this.showError(error.message);
+          }
+        }
+
+        async generateQRCode() {
+          const qrData = {
+            session_id: this.sessionData.session_id,
+            nonce: this.sessionData.nonce,
+            expired_time: this.sessionData.expired_time,
+          };
+
+          const qrContainer = document.getElementById("qrcode");
+          qrContainer.innerHTML = "";
+
+          await QRCode.toCanvas(qrContainer, JSON.stringify(qrData), {
+            width: 200,
+            height: 200,
+            margin: 1,
+            color: {
+              dark: "#000000",
+              light: "#FFFFFF",
+            },
+          });
+
+          this.showStatus("Scan QR code with SAuth mobile app", "loading");
+        }
+
+        startCountdown() {
+          const expiredTime = new Date(this.sessionData.expired_time);
+          const timerElement = document.getElementById("timer");
+
+          this.countdownInterval = setInterval(() => {
+            const now = new Date();
+            const timeLeft = expiredTime - now;
+
+            if (timeLeft <= 0) {
+              this.handleExpired();
+              return;
+            }
+
+            const minutes = Math.floor(timeLeft / 60000);
+            const seconds = Math.floor((timeLeft % 60000) / 1000);
+            timerElement.textContent = `Expires in: ${minutes}:${seconds
+              .toString()
+              .padStart(2, "0")}`;
+          }, 1000);
+        }
+
+        startStatusCheck() {
+          // Check status every 3 seconds
+          this.refreshInterval = setInterval(() => {
+            this.checkVerificationStatus();
+          }, 3000);
+        }
+
+        async checkVerificationStatus() {
+          try {
+            const response = await fetch(`/qrcode/${this.requestId}`);
+
+            if (response.status === 410) {
+              this.handleExpired();
+              return;
+            }
+
+            if (!response.ok) {
+              return;
+            }
+
+            const data = await response.json();
+            // If session_id changed, it means verification was completed
+            if (data.session_id !== this.sessionData.session_id) {
+              this.handleSuccess();
+            }
+          } catch (error) {
+            console.error("Error checking status:", error);
+          }
+        }
+
+        handleExpired() {
+          this.clearIntervals();
+          this.showStatus("QR code expired", "expired");
+          document.getElementById("timer").textContent = "";
+
+          if (this.sessionData.allow_retry) {
+            document.getElementById("refreshBtn").style.display =
+              "inline-block";
+          }
+        }
+
+        handleSuccess() {
+          this.clearIntervals();
+          this.showStatus("✓ Authentication successful!", "success");
+          document.getElementById("timer").textContent =
+            "You can close this window";
+
+          // Auto close after 3 seconds if in popup
+          if (window.opener) {
+            setTimeout(() => {
+              window.close();
+            }, 3000);
+          }
+        }
+
+        showStatus(message, type) {
+          const statusElement = document.getElementById("status");
+          statusElement.textContent = message;
+          statusElement.className = `status ${type}`;
+        }
+
+        showError(message) {
+          this.clearIntervals();
+          this.showStatus(`Error: ${message}`, "error");
+          document.getElementById("timer").textContent = "";
+          document.getElementById("qrcode").innerHTML = "❌";
+        }
+
+        clearIntervals() {
+          if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+          }
+          if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+          }
+        }
+      }
+
+      function refreshQR() {
+        location.reload();
+      }
+
+      // Initialize when page loads
+      let sAuthVerify;
+      document.addEventListener("DOMContentLoaded", () => {
+        sAuthVerify = new SAuthVerify();
+      });
+
+      // Clean up intervals when page unloads
+      window.addEventListener("beforeunload", () => {
+        if (sAuthVerify) {
+          sAuthVerify.clearIntervals();
+        }
+      });
+    </script>
+  </body>
+</html>
