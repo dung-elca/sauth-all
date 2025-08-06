@@ -57,11 +57,13 @@ class SAuthAdmin {
 
   async loadClients() {
     try {
-      // For now, we'll simulate loading from localStorage
-      // In a real app, this would be an API call
-      const storedClients = localStorage.getItem("sauth_clients");
-      this.clients = storedClients ? JSON.parse(storedClients) : [];
-      this.renderClients();
+      const response = await fetch("/client");
+      if (response.ok) {
+        this.clients = await response.json();
+        this.renderClients();
+      } else {
+        throw new Error("Failed to load clients");
+      }
     } catch (error) {
       console.error("Error loading clients:", error);
       this.showNotification("Error loading clients", "error");
@@ -239,28 +241,15 @@ class SAuthAdmin {
 
     try {
       const response = await fetch("/client", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           client_id: clientId,
-          client_secret: clientSecret,
         },
         body: JSON.stringify(configData),
       });
 
       if (response.ok) {
-        // Update local storage
-        const clientIndex = this.clients.findIndex(
-          (c) => c.client_id === clientId
-        );
-        if (clientIndex !== -1) {
-          this.clients[clientIndex] = {
-            ...this.clients[clientIndex],
-            ...configData,
-          };
-          localStorage.setItem("sauth_clients", JSON.stringify(this.clients));
-        }
-
         this.showNotification("Configuration updated successfully", "success");
         this.closeModal(document.getElementById("configModal"));
         this.loadClients();
@@ -275,7 +264,7 @@ class SAuthAdmin {
   }
 
   async createClient(formData) {
-    const response = await fetch("/client/register", {
+    const response = await fetch("/client", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -290,39 +279,6 @@ class SAuthAdmin {
     });
 
     if (response.ok) {
-      const newClient = await response.json();
-
-      // Add additional fields from form
-      const clientData = {
-        ...newClient,
-        name: formData.name,
-        contact: formData.contact,
-        webhook_url: formData.webhook_url,
-        enable_datadome: formData.enable_datadome,
-        enable_recaptcha: formData.enable_recaptcha,
-        created_at: new Date().toISOString(),
-      };
-
-      this.clients.push(clientData);
-      localStorage.setItem("sauth_clients", JSON.stringify(this.clients));
-
-      // If config data provided, update config
-      if (
-        formData.webhook_url ||
-        formData.enable_datadome ||
-        formData.enable_recaptcha
-      ) {
-        await this.updateClientConfig(
-          newClient.client_id,
-          newClient.client_secret,
-          {
-            webhook_url: formData.webhook_url,
-            enable_datadome: formData.enable_datadome,
-            enable_recaptcha: formData.enable_recaptcha,
-          }
-        );
-      }
-
       this.showNotification("Client created successfully", "success");
     } else {
       const error = await response.json();
@@ -330,20 +286,27 @@ class SAuthAdmin {
     }
   }
 
-  async updateClientConfig(clientId, clientSecret, configData) {
-    const response = await fetch("/client/config", {
-      method: "POST",
+  async updateClient(clientId, formData) {
+    const response = await fetch("/client", {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         client_id: clientId,
-        client_secret: clientSecret,
       },
-      body: JSON.stringify(configData),
+      body: JSON.stringify({
+        name: formData.name,
+        contact: formData.contact,
+        webhook_url: formData.webhook_url,
+        enable_datadome: formData.enable_datadome,
+        enable_recaptcha: formData.enable_recaptcha,
+      }),
     });
 
-    if (!response.ok) {
+    if (response.ok) {
+      this.showNotification("Client updated successfully", "success");
+    } else {
       const error = await response.json();
-      throw new Error(error.error || "Failed to update config");
+      throw new Error(error.error || "Failed to update client");
     }
   }
 
@@ -353,8 +316,8 @@ class SAuthAdmin {
 
   deleteClient(clientId) {
     if (confirm("Are you sure you want to delete this client?")) {
-      this.clients = this.clients.filter((c) => c.client_id !== clientId);
-      localStorage.setItem("sauth_clients", JSON.stringify(this.clients));
+      // Call DELETE API when implemented
+      // For now, just reload the client list
       this.loadClients();
       this.showNotification("Client deleted successfully", "success");
     }

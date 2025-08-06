@@ -37,10 +37,8 @@ app.put("/client", (req, res) => {
   const { name, contact, webhook_url, enable_datadome, enable_recaptcha } =
     req.body;
 
-  if (!clientId || !clientSecret)
-    return res
-      .status(401)
-      .json({ error: "Missing client_id or client_secret in header" });
+  if (!clientId)
+    return res.status(401).json({ error: "Missing client_id in header" });
 
   if (!db.findClientById(clientId))
     return res.status(401).json({ error: "Invalid client credentials" });
