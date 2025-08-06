@@ -115,7 +115,7 @@ export function deleteClient(client_id) {
 }
 
 // Verification request operations
-export function getVerificationRequest(
+export function smartGetVerificationRequest(
   client_id,
   max_try,
   expired_duration,
@@ -152,7 +152,7 @@ export function getVerificationRequest(
   }
 }
 
-export function getVerificationRequestSession(request_id) {
+export function getNewVerificationRequestSession(request_id) {
   const db = loadDB();
   const requestIndex = db.verification_requests.findIndex(
     (r) => r.request_id === request_id
@@ -175,7 +175,28 @@ export function getVerificationRequestSession(request_id) {
   request.max_try = request.max_try - 1;
   db.verification_requests[requestIndex] = request;
   saveDB(db);
-  return request;
+  return {
+    session_id: request.session_id,
+    expired_time: request.expired_time,
+    nonce: request.nonce,
+    canRetry: request.max_try > 0,
+  };
+}
+
+export function getVerificationRequestStatus(request_id) {
+  const db = loadDB();
+  const request = db.verification_requests.find(
+    (r) => r.request_id === request_id
+  );
+  if (!request) return null;
+  return {
+    session_id: request.session_id,
+    expired_time: request.expired_time,
+    nonce: request.nonce,
+    canRetry: request.max_try > 0,
+    status: request.status,
+    device_id: request.device_id,
+  };
 }
 
 export function updateVerificationRequest(request_id, { device_id, status }) {

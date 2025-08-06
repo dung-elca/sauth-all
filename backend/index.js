@@ -102,7 +102,7 @@ app.post("/verify-request", (req, res) => {
   )
     return res.status(400).json({ error: "Invalid body" });
 
-  const request = db.getVerificationRequest(
+  const request = db.smartGetVerificationRequest(
     clientId,
     max_try,
     expired_duration,
@@ -123,22 +123,38 @@ app.get("/verify/:request_id", (req, res) => {
 });
 
 // --- SAuth Web APIs ---
-app.get("/qrcode/:request_id", (req, res) => {
+app.get("/request/:request_id/status", (req, res) => {
   const { request_id } = req.params;
 
-  const request = db.getVerificationRequestSession(request_id);
-  if (!request) return res.status(404).json({ error: "Request not found" });
+  const status = db.getVerificationRequestStatus(request_id);
+  if (!status) return res.status(404).json({ error: "Request not found" });
+
+  res.json({
+    session_id: status.session_id,
+    expired_time: status.expired_time,
+    nonce: status.nonce,
+    canRetry: status.canRetry,
+    status: status.status,
+    device_id: status.device_id,
+  });
+});
+
+app.get("/request/:request_id/qrcode", (req, res) => {
+  const { request_id } = req.params;
+
+  const session = db.getNewVerificationRequestSession(request_id);
+  if (!session) return res.status(404).json({ error: "Request not found" });
 
   // Check if expired
-  if (new Date(request.expired_time) < new Date()) {
+  if (new Date(session.expired_time) < new Date()) {
     return res.status(410).json({ error: "Request expired" });
   }
 
   res.json({
-    session_id: request.session_id,
-    expired_time: request.expired_time,
-    nonce: request.nonce,
-    allow_retry: request.allow_refresh,
+    session_id: session.session_id,
+    expired_time: session.expired_time,
+    nonce: session.nonce,
+    canRetry: session.canRetry,
   });
 });
 
