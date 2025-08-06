@@ -166,8 +166,8 @@ app.post("/qrcode/:request_id/refresh", (req, res) => {
 
 // --- SAuth Mobile APIs ---
 app.post("/mobile/register-device", (req, res) => {
-  const { public_key, signature, device_info } = req.body;
-  if (!public_key || !signature)
+  const { public_key, signature, device_info, timestamp } = req.body;
+  if (!public_key || !signature || !device_info || !timestamp)
     return res.status(400).json({ error: "Missing public_key or signature" });
 
   const device = db.createDevice(public_key, signature, device_info);

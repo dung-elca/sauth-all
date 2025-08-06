@@ -7,10 +7,11 @@ class ApiClient {
 
   ApiClient(this.baseUrl);
 
-  Future<Map<String, dynamic>> registerDevice(
+  Future<String> registerDevice(
     String publicKey,
     String signature,
-    Map<String, dynamic> deviceInfo,
+    String deviceInfo,
+    int timestamp,
   ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/mobile/register-device'),
@@ -18,23 +19,24 @@ class ApiClient {
       body: jsonEncode({
         'public_key': publicKey,
         'signature': signature,
-        'timestamp': DateTime.now().microsecondsSinceEpoch,
+        'timestamp': timestamp,
         'device_info': deviceInfo,
       }),
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      return jsonDecode(response.body)["device_id"] as String;
     } else {
       throw Exception('Failed to register device: ${response.body}');
     }
   }
 
-  Future<Map<String, dynamic>> verifyQrCode(
+  Future<String> verifyQrCode(
     String sessionId,
     String nonce,
     String signature,
     String deviceId,
+    int timestamp,
   ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/mobile/verify-qrcode'),
@@ -44,12 +46,12 @@ class ApiClient {
         'nonce': nonce,
         'signature': signature,
         'device_id': deviceId,
-        'timestamp': DateTime.now().microsecondsSinceEpoch,
+        'timestamp': timestamp,
       }),
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      return jsonDecode(response.body)["status"] as String;
     } else {
       throw Exception('Failed to verify QR code: ${response.body}');
     }
