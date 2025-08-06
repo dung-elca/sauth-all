@@ -238,7 +238,7 @@ class SAuthAdmin {
     };
 
     try {
-      const response = await fetch("/client/config", {
+      const response = await fetch("/client", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -283,6 +283,9 @@ class SAuthAdmin {
       body: JSON.stringify({
         name: formData.name,
         contact: formData.contact,
+        webhook_url: formData.webhook_url,
+        enable_datadome: formData.enable_datadome,
+        enable_recaptcha: formData.enable_recaptcha,
       }),
     });
 

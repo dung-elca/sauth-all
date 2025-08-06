@@ -46,7 +46,13 @@ export function randomString(length) {
 }
 
 // Client operations
-export function createClient(name, contact) {
+export function createClient(
+  name,
+  contact,
+  webhook_url,
+  enable_datadome,
+  enable_recaptcha
+) {
   const db = loadDB();
   const client = {
     client_id: randomString(64),
@@ -54,6 +60,9 @@ export function createClient(name, contact) {
     api_key: randomString(32),
     name,
     contact,
+    webhook_url,
+    enable_datadome,
+    enable_recaptcha,
     created_at: new Date().toISOString(),
   };
   db.clients.push(client);
@@ -61,25 +70,41 @@ export function createClient(name, contact) {
   return client;
 }
 
-export function findClientById(client_id, client_secret = null) {
+export function findClientById(client_id) {
   const db = loadDB();
-  if (client_secret) {
-    return db.clients.find(
-      (c) => c.client_id === client_id && c.client_secret === client_secret
-    );
-  }
   return db.clients.find((c) => c.client_id === client_id);
 }
 
-export function updateClientConfig(client_id, config) {
+export function updateClient(
+  client_id,
+  { name, contact, webhook_url, enable_datadome, enable_recaptcha }
+) {
   const db = loadDB();
   const clientIndex = db.clients.findIndex((c) => c.client_id === client_id);
   if (clientIndex !== -1) {
-    db.clients[clientIndex] = { ...db.clients[clientIndex], ...config };
+    db.clients[clientIndex].name = name || db.clients[clientIndex].name;
+    db.clients[clientIndex].contact =
+      contact || db.clients[clientIndex].contact;
+    db.clients[clientIndex].webhook_url =
+      webhook_url || db.clients[clientIndex].webhook_url;
+    db.clients[clientIndex].enable_datadome =
+      enable_datadome != undefined
+        ? enable_datadome
+        : db.clients[clientIndex].enable_datadome;
+    db.clients[clientIndex].enable_recaptcha =
+      enable_recaptcha != undefined
+        ? enable_recaptcha
+        : db.clients[clientIndex].enable_recaptcha;
+    db.clients[clientIndex].updated_at = new Date().toISOString();
     saveDB(db);
     return true;
   }
   return false;
+}
+
+export function getAllClients() {
+  const db = loadDB();
+  return db.clients;
 }
 
 // Verification request operations

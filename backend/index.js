@@ -13,11 +13,18 @@ app.use(express.json());
 app.use(express.static("web"));
 
 // --- Client APIs ---
-app.post("/client/register", (req, res) => {
-  const { name, contact } = req.body;
+app.post("/client", (req, res) => {
+  const { name, contact, webhook_url, enable_datadome, enable_recaptcha } =
+    req.body;
   if (!name) return res.status(400).json({ error: "Missing name" });
 
-  const client = db.createClient(name, contact);
+  const client = db.createClient(
+    name,
+    contact,
+    webhook_url,
+    enable_datadome,
+    enable_recaptcha
+  );
   res.json({
     client_id: client.client_id,
     client_secret: client.client_secret,
@@ -25,20 +32,22 @@ app.post("/client/register", (req, res) => {
   });
 });
 
-app.post("/client/config", (req, res) => {
+app.put("/client", (req, res) => {
   const clientId = req.header("client_id");
-  const clientSecret = req.header("client_secret");
-  const { enable_datadome, enable_recaptcha, webhook_url } = req.body;
+  const { name, contact, webhook_url, enable_datadome, enable_recaptcha } =
+    req.body;
 
   if (!clientId || !clientSecret)
     return res
       .status(401)
       .json({ error: "Missing client_id or client_secret in header" });
 
-  if (!db.findClientById(clientId, clientSecret))
+  if (!db.findClientById(clientId))
     return res.status(401).json({ error: "Invalid client credentials" });
 
-  const success = db.updateClientConfig(clientId, {
+  const success = db.updateClient(clientId, {
+    name,
+    contact,
     enable_datadome,
     enable_recaptcha,
     webhook_url,
@@ -48,7 +57,11 @@ app.post("/client/config", (req, res) => {
   res.json({ success: true });
 });
 
-app.post("/client/verify-request", (req, res) => {
+app.get("/client", (req, res) => {
+  res.json(db.getAllClients());
+});
+
+app.post("/verify-request", (req, res) => {
   const clientId = req.header("client_id");
   const clientSecret = req.header("client_secret");
   const { allow_refresh, max_try, metadata } = req.body;

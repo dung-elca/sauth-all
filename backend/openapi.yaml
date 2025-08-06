@@ -6,19 +6,21 @@ info:
 servers:
   - url: https://sauth.example.com/api
 tags:
-  - name: Admin
+  - name: SAuth Admin
     description: APIs for admin backend
-  - name: Client
-    description: APIs for client backend
   - name: SAuth Web
     description: APIs for SAuth Web (QR Page)
   - name: SAuth Mobile
     description: APIs for SAuth Mobile app
+  - name: Client
+    description: APIs for client backend
+  - name: Client Webhook
+    description: APIs for client backend Webhook
 paths:
   # --- Client APIs ---
-  /client/create:
+  /client:
     post:
-      tags: [Admin]
+      tags: [SAuth Admin]
       summary: Create a new client
       requestBody:
         required: true
@@ -52,7 +54,7 @@ paths:
                   client_secret:
                     type: string
     put:
-      tags: [Admin]
+      tags: [SAuth Admin]
       summary: Update existing client
       parameters:
         - name: client_id
@@ -89,92 +91,38 @@ paths:
                 properties:
                   success:
                     type: boolean
-  /client/verify-request:
-    post:
-      tags: [Client]
-      summary: Send verify request
-      parameters:
-        - name: client_id
-          in: header
-          required: true
-          schema:
-            type: string
-        - name: client_secret
-          in: header
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                allow_refresh:
-                  type: boolean
-                expired_duration:
-                  type: number
-                max_try:
-                  type: number
-                metadata:
-                  type: object
-              required:
-                - allow_refresh
-                - expired_duration
-                - max_try
-      responses:
-        "200":
-          description: Verification request created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  url:
-                    type: string
-                  request_id:
-                    type: string
-  /client/webhook:
-    post:
-      tags: [Client]
-      summary: Webhook for client to receive verification result
-      parameters:
-        - name: api_key
-          in: header
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                request_id:
-                  type: string
-                status:
-                  type: string
-                device_id:
-                  type: string
-                metadata:
-                  type: object
-              required:
-                - request_id
-                - status
-                - device_id
-      responses:
-        "200":
-          description: Webhook received
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
 
+    get:
+      tags: [SAuth Admin]
+      summary: Get all clients
+      responses:
+        "200":
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    client_id:
+                      type: string
+                    client_secret:
+                      type: string
+                    api_key:
+                      type: string
+                    name:
+                      type: string
+                    contact:
+                      type: string
+                    webhook_url:
+                      type: string
+                    enable_datadome:
+                      type: boolean
+                    enable_recaptcha:
+                      type: boolean
+                    created_at:
+                      type: string
   # --- SAuth Web APIs ---
   /sauthweb/qrcode/{request_id}:
     get:
@@ -268,5 +216,91 @@ paths:
                 properties:
                   status:
                     type: string
+                  message:
+                    type: string
+  # --- Client APIs ---
+  /verify-request:
+    post:
+      tags: [Client]
+      summary: Send verify request
+      parameters:
+        - name: client_id
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: client_secret
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                allow_refresh:
+                  type: boolean
+                expired_duration:
+                  type: number
+                max_try:
+                  type: number
+                metadata:
+                  type: object
+              required:
+                - allow_refresh
+                - expired_duration
+                - max_try
+      responses:
+        "200":
+          description: Verification request created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                  request_id:
+                    type: string
+  /webhook:
+    post:
+      tags: [Client Webhook]
+      summary: Webhook for client to receive verification result
+      parameters:
+        - name: api_key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id:
+                  type: string
+                status:
+                  type: string
+                device_id:
+                  type: string
+                metadata:
+                  type: object
+              required:
+                - request_id
+                - status
+                - device_id
+      responses:
+        "200":
+          description: Webhook received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
                   message:
                     type: string
