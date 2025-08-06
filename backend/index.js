@@ -81,7 +81,7 @@ app.delete("/client/:clientId", (req, res) => {
 app.post("/verify-request", (req, res) => {
   const clientId = req.header("client_id");
   const clientSecret = req.header("client_secret");
-  const { allow_refresh, max_try, metadata } = req.body;
+  const { allow_refresh, max_try, expired_duration, metadata } = req.body;
 
   if (!clientId || !clientSecret)
     return res
@@ -90,16 +90,23 @@ app.post("/verify-request", (req, res) => {
   const client = db.findClientById(clientId, clientSecret);
   if (!client)
     return res.status(401).json({ error: "Invalid client credentials" });
+
   if (client.webhook_url === undefined) {
     return res.status(403).json({ error: "Webhook URL is not set" });
   }
-  if (typeof allow_refresh !== "boolean" || typeof max_try !== "number")
+
+  if (
+    typeof allow_refresh !== "boolean" ||
+    typeof max_try !== "number" ||
+    typeof expired_duration !== "number"
+  )
     return res.status(400).json({ error: "Invalid body" });
 
   const request = db.createVerificationRequest(
     clientId,
     allow_refresh,
     max_try,
+    expired_duration,
     metadata
   );
   if (!request) return res.status(404).json({ error: "Client not found" });

@@ -119,7 +119,8 @@ export function createVerificationRequest(
   client_id,
   allow_refresh,
   max_try,
-  expired_duration
+  expired_duration,
+  metadata
 ) {
   const db = loadDB();
   const client = db.clients.find((c) => c.client_id === client_id);
@@ -130,6 +131,7 @@ export function createVerificationRequest(
     client_id,
     allow_refresh,
     expired_duration,
+    metadata,
     max_try,
     device_id: null,
     status: "pending",
@@ -167,16 +169,18 @@ export function genSessionAndGetVerificationRequest(request_id) {
   return request;
 }
 
-export function updateVerificationRequest(request_id, updates) {
+export function updateVerificationRequest(request_id, { device_id, status }) {
   const db = loadDB();
   const requestIndex = db.verification_requests.findIndex(
     (r) => r.request_id === request_id
   );
   if (requestIndex !== -1) {
-    db.verification_requests[requestIndex] = {
-      ...db.verification_requests[requestIndex],
-      ...updates,
-    };
+    db.verification_requests[requestIndex].device_id =
+      device_id || db.verification_requests[requestIndex].device_id;
+    db.verification_requests[requestIndex].status =
+      status || db.verification_requests[requestIndex].status;
+    db.verification_requests[requestIndex].updated_at =
+      new Date().toISOString();
     saveDB(db);
     return true;
   }
