@@ -158,37 +158,12 @@
             return;
           }
 
-          this.loadQRCode();
+          this.refreshQRCode();
         }
 
         getRequestIdFromURL() {
           const pathParts = window.location.pathname.split("/");
           return pathParts[pathParts.length - 1];
-        }
-
-        async loadQRCode() {
-          try {
-            this.showStatus("Loading QR code...", "loading");
-
-            const response = await fetch(`/qrcode/${this.requestId}`);
-
-            if (!response.ok) {
-              if (response.status === 404) {
-                throw new Error("Verification request not found");
-              } else if (response.status === 410) {
-                throw new Error("Verification request expired");
-              }
-              throw new Error("Failed to load QR code");
-            }
-
-            this.sessionData = await response.json();
-            await this.generateQRCode();
-            this.startCountdown();
-            this.startStatusCheck();
-          } catch (error) {
-            console.error("Error loading QR code:", error);
-            this.showError(error.message);
-          }
         }
 
         async generateQRCode() {
@@ -262,11 +237,7 @@
               return;
             }
 
-            // Check if expired by time (UI tự check expired_time)
-            const now = new Date();
-            const expiredTime = new Date(data.expired_time);
-
-            if (now > expiredTime) {
+            if (Date.now() > data.expired_time) {
               if (data.canRetry) {
                 this.handleExpiredWithRetry();
               } else {
@@ -306,10 +277,7 @@
             await this.generateQRCode();
             this.startCountdown();
             this.startStatusCheck();
-            this.showStatus(
-              "QR code refreshed - Scan with SAuth mobile app",
-              "loading"
-            );
+            this.showStatus("Scan with SAuth mobile app", "loading");
           } catch (error) {
             console.error("Error refreshing QR code:", error);
             this.showError("Failed to refresh QR code");

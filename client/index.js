@@ -3,6 +3,7 @@ const axios = require("axios");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const { randomBytes } = require("crypto");
 require("dotenv").config();
 
 const app = express();
@@ -94,9 +95,9 @@ async function verifyRequestToApi(lot_id) {
   const response = await axios.post(
     `${apiUrl}/verify-request`,
     {
-      max_try: 2,
-      expired_duration: 10,
-      content_id: "your_content_id_here",
+      max_try: 3,
+      expired_duration: 30,
+      content_id: randomBytes(16).toString("hex"),
       metadata: {
         lot_id,
       },

@@ -166,8 +166,7 @@ export function getNewVerificationRequestSession(request_id) {
 
   request.session_id = "sess_" + randomString(32);
   request.nonce = randomString(16);
-  request.expired_time =
-    (request.expired_time ?? Date.now()) + request.expired_duration * 1000;
+  request.expired_time = Date.now() + request.expired_duration * 1000;
   request.max_try = request.max_try - 1;
   db.verification_requests[requestIndex] = request;
   saveDB(db);
