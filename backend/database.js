@@ -160,11 +160,7 @@ export function getNewVerificationRequestSession(request_id) {
   if (requestIndex === -1) return null;
 
   const request = db.verification_requests[requestIndex];
-  if (
-    request.status == "verified" ||
-    request.max_try <= 0 ||
-    request.expired_time < Date.now() + 10 * 1000
-  ) {
+  if (request.status == "verified" || request.max_try <= 0) {
     return request;
   }
 
