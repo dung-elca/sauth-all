@@ -136,7 +136,7 @@
         }
       }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
   </head>
   <body>
     <div class="container">
@@ -221,14 +221,14 @@
           const qrContainer = document.getElementById("qrcode");
           qrContainer.innerHTML = "";
 
-          await QRCode.toCanvas(qrContainer, JSON.stringify(qrData), {
+          // Sử dụng QRCode.js (GitHub) đúng chuẩn
+          new QRCode(qrContainer, {
+            text: JSON.stringify(qrData),
             width: 200,
             height: 200,
-            margin: 1,
-            color: {
-              dark: "#000000",
-              light: "#FFFFFF",
-            },
+            colorDark: "#000000",
+            colorLight: "#FFFFFF",
+            correctLevel: QRCode.CorrectLevel.H,
           });
 
           this.showStatus("Scan QR code with SAuth mobile app", "loading");
