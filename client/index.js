@@ -19,6 +19,8 @@ let config = {
   clientId: "",
   clientSecret: "",
   apiKey: "",
+  max_try: 3,
+  expired_duration: 30,
 };
 
 function loadConfig() {
@@ -53,13 +55,16 @@ app.get("/status", async (req, res) => {
 });
 
 app.post("/config", async (req, res) => {
-  const { clientId, clientSecret, apiKey } = req.body;
-  if (!clientId || !clientSecret || !apiKey) {
+  const { clientId, clientSecret, apiKey, max_try, expired_duration } =
+    req.body;
+  if (!clientId || !clientSecret || !apiKey || !max_try || !expired_duration) {
     return res.status(400).json({ error: "Missing required fields" });
   }
   config.clientId = clientId;
   config.clientSecret = clientSecret;
   config.apiKey = apiKey;
+  config.max_try = max_try;
+  config.expired_duration = expired_duration;
   if (!saveConfig()) {
     return res.status(500).json({ error: "Failed to save config" });
   }
@@ -69,7 +74,13 @@ app.post("/config", async (req, res) => {
 });
 
 app.post("/verify", async (req, res) => {
-  if (!config.clientId || !config.clientSecret || !config.apiKey) {
+  if (
+    !config.clientId ||
+    !config.clientSecret ||
+    !config.apiKey ||
+    !config.max_try ||
+    !config.expired_duration
+  ) {
     return res.status(500).json({ error: "Configuration not set" });
   }
   const { lot_id } = req.body;
@@ -90,13 +101,11 @@ app.post("/verify", async (req, res) => {
 
 async function verifyRequestToApi(lot_id) {
   const apiUrl = process.env.VERIFY_API_HOST;
-  const clientId = config.clientId;
-  const clientSecret = config.clientSecret;
   const response = await axios.post(
     `${apiUrl}/verify-request`,
     {
-      max_try: 3,
-      expired_duration: 30,
+      max_try: config.max_try,
+      expired_duration: config.expired_duration,
       content_id: randomBytes(16).toString("hex"),
       metadata: {
         lot_id,
@@ -104,8 +113,8 @@ async function verifyRequestToApi(lot_id) {
     },
     {
       headers: {
-        client_id: clientId,
-        client_secret: clientSecret,
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
         "Content-Type": "application/json",
       },
     }

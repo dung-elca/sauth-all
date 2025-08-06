@@ -160,17 +160,21 @@ body {
   color: #333;
 }
 
-.config-form input[type="text"] {
-  padding: 10px 14px;
-  border: 1px solid #ccc;
+.config-form input[type="text"],
+.config-form input[type="number"] {
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
   border-radius: 8px;
   font-size: 16px;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
   outline: none;
+  background-color: #ffffff;
 }
 
-.config-form input[type="text"]:focus {
-  border-color: #007bff;
+.config-form input[type="text"]:focus,
+.config-form input[type="number"]:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .continue-btn {

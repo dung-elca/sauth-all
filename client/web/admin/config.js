@@ -18,6 +18,10 @@ function updateConfigDisplay(data) {
     data?.clientSecret || "Not configured";
   document.getElementById("apiKeyInfo").textContent =
     data?.apiKey || "Not configured";
+  document.getElementById("maxTryInfo").textContent =
+    data?.max_try || "Not configured";
+  document.getElementById("expireDurationInfo").textContent =
+    data?.expired_duration || "Not configured";
 }
 
 function openModal() {
@@ -26,6 +30,9 @@ function openModal() {
   const currentClientSecret =
     document.getElementById("clientSecretInfo").textContent;
   const currentApiKey = document.getElementById("apiKeyInfo").textContent;
+  const currentMaxTry = document.getElementById("maxTryInfo").textContent;
+  const currentExpireDuration =
+    document.getElementById("expireDurationInfo").textContent;
 
   document.getElementById("clientId").value =
     currentClientId !== "Not configured" ? currentClientId : "";
@@ -33,6 +40,10 @@ function openModal() {
     currentClientSecret !== "Not configured" ? currentClientSecret : "";
   document.getElementById("apiKey").value =
     currentApiKey !== "Not configured" ? currentApiKey : "";
+  document.getElementById("maxTry").value =
+    currentMaxTry !== "Not configured" ? currentMaxTry : "";
+  document.getElementById("expireDuration").value =
+    currentExpireDuration !== "Not configured" ? currentExpireDuration : "";
 
   document.getElementById("configModal").style.display = "block";
 }
@@ -70,6 +81,10 @@ document.getElementById("configForm").onsubmit = async function (e) {
   const clientId = document.getElementById("clientId").value;
   const clientSecret = document.getElementById("clientSecret").value;
   const apiKey = document.getElementById("apiKey").value;
+  const max_try = parseInt(document.getElementById("maxTry").value);
+  const expired_duration = parseInt(
+    document.getElementById("expireDuration").value
+  );
   const msg = document.getElementById("configMsg");
   msg.className = "config-msg";
   msg.innerHTML = "";
@@ -77,7 +92,13 @@ document.getElementById("configForm").onsubmit = async function (e) {
     const res = await fetch("/config", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clientId, clientSecret, apiKey }),
+      body: JSON.stringify({
+        clientId,
+        clientSecret,
+        apiKey,
+        max_try,
+        expired_duration,
+      }),
     });
     const result = await res.json();
     closeModal();
