@@ -48,7 +48,6 @@ export function randomString(length) {
 // Client operations
 export function createClient(
   name,
-  contact,
   webhook_url,
   enable_datadome,
   enable_recaptcha
@@ -59,7 +58,6 @@ export function createClient(
     client_secret: randomString(64),
     api_key: randomString(32),
     name,
-    contact,
     webhook_url,
     enable_datadome,
     enable_recaptcha,
@@ -77,14 +75,12 @@ export function findClientById(client_id) {
 
 export function updateClient(
   client_id,
-  { name, contact, webhook_url, enable_datadome, enable_recaptcha }
+  { name, webhook_url, enable_datadome, enable_recaptcha }
 ) {
   const db = loadDB();
   const clientIndex = db.clients.findIndex((c) => c.client_id === client_id);
   if (clientIndex !== -1) {
     db.clients[clientIndex].name = name || db.clients[clientIndex].name;
-    db.clients[clientIndex].contact =
-      contact || db.clients[clientIndex].contact;
     db.clients[clientIndex].webhook_url =
       webhook_url || db.clients[clientIndex].webhook_url;
     db.clients[clientIndex].enable_datadome =

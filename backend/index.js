@@ -15,13 +15,13 @@ app.use(express.static("web"));
 
 // --- Client APIs ---
 app.post("/client", (req, res) => {
-  const { name, contact, webhook_url, enable_datadome, enable_recaptcha } =
-    req.body;
+  const { name, webhook_url, enable_datadome, enable_recaptcha } = req.body;
   if (!name) return res.status(400).json({ error: "Missing name" });
+  if (!webhook_url)
+    return res.status(400).json({ error: "Missing webhook_url" });
 
   const client = db.createClient(
     name,
-    contact,
     webhook_url,
     enable_datadome,
     enable_recaptcha
@@ -35,8 +35,7 @@ app.post("/client", (req, res) => {
 
 app.put("/client", (req, res) => {
   const clientId = req.header("client_id");
-  const { name, contact, webhook_url, enable_datadome, enable_recaptcha } =
-    req.body;
+  const { name, webhook_url, enable_datadome, enable_recaptcha } = req.body;
 
   if (!clientId)
     return res.status(401).json({ error: "Missing client_id in header" });
@@ -46,7 +45,6 @@ app.put("/client", (req, res) => {
 
   const success = db.updateClient(clientId, {
     name,
-    contact,
     enable_datadome,
     enable_recaptcha,
     webhook_url,
@@ -114,7 +112,7 @@ app.post("/verify-request", (req, res) => {
 
 // Serve verification page
 app.get("/verify/:request_id", (req, res) => {
-  res.sendFile(path.join(process.cwd(), "web", "verify.html"));
+  res.sendFile(path.join(process.cwd(), "web", "qrcode.html"));
 });
 
 // --- SAuth Web APIs ---

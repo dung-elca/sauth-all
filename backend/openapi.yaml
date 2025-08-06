@@ -31,8 +31,6 @@ paths:
               properties:
                 name:
                   type: string
-                contact:
-                  type: string
                 webhook_url:
                   type: string
                 enable_datadome:
@@ -41,6 +39,7 @@ paths:
                   type: boolean
               required:
                 - name
+                - webhook_url
       responses:
         "200":
           description: Registered client
@@ -71,8 +70,6 @@ paths:
               properties:
                 name:
                   type: string
-                contact:
-                  type: string
                 webhook_url:
                   type: string
                 enable_datadome:
@@ -81,6 +78,7 @@ paths:
                   type: boolean
               required:
                 - name
+                - webhook_url
       responses:
         "200":
           description: Settings updated
@@ -112,8 +110,6 @@ paths:
                     api_key:
                       type: string
                     name:
-                      type: string
-                    contact:
                       type: string
                     webhook_url:
                       type: string

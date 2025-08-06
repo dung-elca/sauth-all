@@ -91,7 +91,6 @@ class SAuthAdmin {
                     </div>
                 </div>
                 <div class="client-info">
-                    <p><strong>Contact:</strong> ${client.contact || "N/A"}</p>
                     <p><strong>Created:</strong> ${new Date(
                       client.created_at
                     ).toLocaleDateString()}</p>
@@ -146,7 +145,6 @@ class SAuthAdmin {
 
       title.textContent = "Edit Client";
       document.getElementById("clientName").value = client.name;
-      document.getElementById("clientContact").value = client.contact || "";
       document.getElementById("webhookUrl").value = client.webhook_url || "";
       document.getElementById("enableDatadome").checked =
         client.enable_datadome || false;
@@ -172,11 +170,21 @@ class SAuthAdmin {
 
     const formData = {
       name: document.getElementById("clientName").value,
-      contact: document.getElementById("clientContact").value,
       webhook_url: document.getElementById("webhookUrl").value,
       enable_datadome: document.getElementById("enableDatadome").checked,
       enable_recaptcha: document.getElementById("enableRecaptcha").checked,
     };
+
+    // Validate required fields
+    if (!formData.name) {
+      this.showNotification("Name is required", "error");
+      return;
+    }
+
+    if (!formData.webhook_url) {
+      this.showNotification("Webhook URL is required", "error");
+      return;
+    }
 
     try {
       if (this.currentEditingClient) {
@@ -203,7 +211,6 @@ class SAuthAdmin {
       },
       body: JSON.stringify({
         name: formData.name,
-        contact: formData.contact,
         webhook_url: formData.webhook_url,
         enable_datadome: formData.enable_datadome,
         enable_recaptcha: formData.enable_recaptcha,
@@ -227,7 +234,6 @@ class SAuthAdmin {
       },
       body: JSON.stringify({
         name: formData.name,
-        contact: formData.contact,
         webhook_url: formData.webhook_url,
         enable_datadome: formData.enable_datadome,
         enable_recaptcha: formData.enable_recaptcha,
