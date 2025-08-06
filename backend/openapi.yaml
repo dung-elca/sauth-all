@@ -6,6 +6,8 @@ info:
 servers:
   - url: https://sauth.example.com/api
 tags:
+  - name: Admin
+    description: APIs for admin backend
   - name: Client
     description: APIs for client backend
   - name: SAuth Web
@@ -14,10 +16,10 @@ tags:
     description: APIs for SAuth Mobile app
 paths:
   # --- Client APIs ---
-  /client/register:
+  /client/create:
     post:
-      tags: [Client]
-      summary: Register a new client
+      tags: [Admin]
+      summary: Create a new client
       requestBody:
         required: true
         content:
@@ -29,6 +31,12 @@ paths:
                   type: string
                 contact:
                   type: string
+                webhook_url:
+                  type: string
+                enable_datadome:
+                  type: boolean
+                enable_recaptcha:
+                  type: boolean
               required:
                 - name
       responses:
@@ -43,17 +51,11 @@ paths:
                     type: string
                   client_secret:
                     type: string
-  /client/config:
-    post:
-      tags: [Client]
-      summary: Set client config
+    put:
+      tags: [Admin]
+      summary: Update existing client
       parameters:
         - name: client_id
-          in: header
-          required: true
-          schema:
-            type: string
-        - name: client_secret
           in: header
           required: true
           schema:
@@ -65,12 +67,18 @@ paths:
             schema:
               type: object
               properties:
+                name:
+                  type: string
+                contact:
+                  type: string
                 webhook_url:
                   type: string
                 enable_datadome:
                   type: boolean
                 enable_recaptcha:
                   type: boolean
+              required:
+                - name
       responses:
         "200":
           description: Settings updated

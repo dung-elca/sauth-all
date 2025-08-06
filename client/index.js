@@ -13,7 +13,7 @@ app.use(express.json());
 
 app.use(express.static("web"));
 
-const configPath = path.join(__dirname, "config.dat");
+const configPath = path.join(__dirname, "database.json");
 let config = {
   clientId: "",
   clientSecret: "",
