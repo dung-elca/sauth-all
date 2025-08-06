@@ -235,12 +235,11 @@
         }
 
         startCountdown() {
-          const expiredTime = new Date(this.sessionData.expired_time);
+          const expiredTime = this.sessionData.expired_time;
           const timerElement = document.getElementById("timer");
 
           this.countdownInterval = setInterval(() => {
-            const now = new Date();
-            const timeLeft = expiredTime - now;
+            const timeLeft = expiredTime - Date.now();
 
             if (timeLeft <= 0) {
               this.handleExpired();

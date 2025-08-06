@@ -81,8 +81,7 @@ app.delete("/client/:clientId", (req, res) => {
 app.post("/verify-request", (req, res) => {
   const clientId = req.header("client_id");
   const clientSecret = req.header("client_secret");
-  const { allow_refresh, max_try, expired_duration, content_id, metadata } =
-    req.body;
+  const { max_try, expired_duration, content_id, metadata } = req.body;
 
   if (!clientId || !clientSecret)
     return res
@@ -97,7 +96,6 @@ app.post("/verify-request", (req, res) => {
   }
 
   if (
-    typeof allow_refresh !== "boolean" ||
     typeof max_try !== "number" ||
     typeof expired_duration !== "number" ||
     typeof content_id !== "string"
@@ -106,7 +104,6 @@ app.post("/verify-request", (req, res) => {
 
   const request = db.getVerificationRequest(
     clientId,
-    allow_refresh,
     max_try,
     expired_duration,
     content_id,

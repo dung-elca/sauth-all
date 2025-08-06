@@ -117,7 +117,6 @@ export function deleteClient(client_id) {
 // Verification request operations
 export function getVerificationRequest(
   client_id,
-  allow_refresh,
   max_try,
   expired_duration,
   content_id,
@@ -131,10 +130,6 @@ export function getVerificationRequest(
   );
   if (existedRequest) {
     existedRequest.request_id = "req_" + randomString(32);
-    existedRequest.allow_refresh = allow_refresh;
-    existedRequest.max_try = max_try;
-    existedRequest.expired_duration = expired_duration;
-    existedRequest.metadata = metadata;
     existedRequest.updated_at = new Date().toISOString();
     saveDB(db);
     return existedRequest;
@@ -145,7 +140,6 @@ export function getVerificationRequest(
       device_id: null,
       status: "pending",
       created_at: new Date().toISOString(),
-      allow_refresh,
       max_try,
       expired_duration,
       content_id,
@@ -167,18 +161,18 @@ export function getVerificationRequestSession(request_id) {
 
   const request = db.verification_requests[requestIndex];
   if (
-    (!request.allow_refresh && request.session_id != null) ||
-    request.status == "verified"
+    request.status == "verified" ||
+    request.max_try <= 0 ||
+    request.expired_time < Date.now() + 10 * 1000
   ) {
     return request;
   }
 
   request.session_id = "sess_" + randomString(32);
   request.nonce = randomString(16);
-  request.expired_time = new Date(
-    Date.now() + (request.expired_duration || 300) * 1000
-  ).toISOString();
-
+  request.expired_time =
+    (request.expired_time ?? Date.now()) + request.expired_duration * 1000;
+  request.max_try = request.max_try - 1;
   db.verification_requests[requestIndex] = request;
   saveDB(db);
   return request;
