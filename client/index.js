@@ -1,6 +1,8 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
@@ -11,45 +13,108 @@ app.use(express.json());
 
 app.use(express.static("web"));
 
+const configPath = path.join(__dirname, "config.dat");
+let config = {
+  clientId: "",
+  clientSecret: "",
+  apiKey: "",
+};
+
+function loadConfig() {
+  if (!fs.existsSync(configPath)) return;
+  try {
+    const raw = fs.readFileSync(configPath, "utf8");
+    const parsed = JSON.parse(raw);
+    if (typeof parsed === "object" && parsed !== null) {
+      config = { ...config, ...parsed };
+    }
+  } catch (err) {
+    console.error("[Config] Failed to load config.dat:", err);
+  }
+}
+
+function saveConfig() {
+  try {
+    fs.writeFileSync(configPath, JSON.stringify(config));
+    return true;
+  } catch (err) {
+    console.error("[Config] Failed to save config.dat:", err);
+    return false;
+  }
+}
+
+loadConfig();
+
 let memory = {};
 
+app.get("/status", async (req, res) => {
+  return res.status(200).json(config);
+});
+
+app.post("/config", async (req, res) => {
+  const { clientId, clientSecret, apiKey } = req.body;
+  if (!clientId || !clientSecret || !apiKey) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  config.clientId = clientId;
+  config.clientSecret = clientSecret;
+  config.apiKey = apiKey;
+  if (!saveConfig()) {
+    return res.status(500).json({ error: "Failed to save config" });
+  }
+  return res.status(200).json({
+    message: "Configuration saved successfully",
+  });
+});
+
 app.post("/verify", async (req, res) => {
+  if (!config.clientId || !config.clientSecret || !config.apiKey) {
+    return res.status(500).json({ error: "Configuration not set" });
+  }
   const { lot_id } = req.body;
   if (!lot_id) {
     return res.status(400).json({ error: "Missing lot_id in body" });
   }
   try {
-    const apiUrl = process.env.VERIFY_API_HOST;
-    const clientId = process.env.CLIENT_ID;
-    const clientSecret = process.env.CLIENT_SECRET;
-    const response = await axios.post(
-      `${apiUrl}/verification-request`,
-      {
-        allow_refresh: true,
-        max_try: 5,
-        metadata: {
-          lot_id,
-        },
-      },
-      {
-        headers: {
-          client_id: clientId,
-          client_secret: clientSecret,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await verifyRequestToApi(lot_id);
     memory[lot_id] = {
-      request_id: response.data.request_id,
-      status: "need_verification",
+      request_id: response.request_id,
+      status: "pending",
     };
-    res.status(200).json(response.data.url);
+    res.status(200).json(response.url);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
+async function verifyRequestToApi(lot_id) {
+  const apiUrl = process.env.VERIFY_API_HOST;
+  const clientId = config.clientId;
+  const clientSecret = config.clientSecret;
+  const response = await axios.post(
+    `${apiUrl}/client/verify-request`,
+    {
+      allow_refresh: true,
+      max_try: 5,
+      metadata: {
+        lot_id,
+      },
+    },
+    {
+      headers: {
+        client_id: clientId,
+        client_secret: clientSecret,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return response.data;
+}
+
 app.post("/check", (req, res) => {
+  if (!config.clientId || !config.clientSecret || !config.apiKey) {
+    return res.status(500).json({ error: "Configuration not set" });
+  }
   const { lot_id } = req.body;
   if (lot_id) {
     if (memory[lot_id]) {
@@ -65,6 +130,9 @@ app.post("/check", (req, res) => {
 });
 
 app.post("/webhook", (req, res) => {
+  if (!config.clientId || !config.clientSecret || !config.apiKey) {
+    return res.status(500).json({ error: "Configuration not set" });
+  }
   const apiKey = req.headers["api_key"];
   const envApiKey = process.env.API_KEY;
   const {

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="auth-check.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin tool - Configuration</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="config-info">
+        <h1>Configuration</h1>
+        <div class="config-item">
+          <label>Client ID:</label>
+          <span id="clientIdInfo" class="config-value">Not configured</span>
+        </div>
+        <div class="config-item">
+          <label>Client Secret:</label>
+          <span id="clientSecretInfo" class="config-value">Not configured</span>
+        </div>
+        <div class="config-item">
+          <label>API Key:</label>
+          <span id="apiKeyInfo" class="config-value">Not configured</span>
+        </div>
+        <button id="editConfigBtn" class="edit-btn">Edit Configuration</button>
+      </div>
+    </div>
+
+    <!-- Modal Popup -->
+    <div id="configModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Configuration</h2>
+          <span class="close">&times;</span>
+        </div>
+        <form id="configForm" class="config-form">
+          <div class="form-group">
+            <label for="clientId">Client ID</label>
+            <input type="text" id="clientId" name="clientId" required />
+          </div>
+          <div class="form-group">
+            <label for="clientSecret">Client Secret</label>
+            <input type="text" id="clientSecret" name="clientSecret" required />
+          </div>
+          <div class="form-group">
+            <label for="apiKey">API Key</label>
+            <input type="text" id="apiKey" name="apiKey" required />
+          </div>
+          <button type="submit" class="continue-btn">Save Configuration</button>
+        </form>
+        <div id="configMsg" style="margin-top: 20px"></div>
+      </div>
+    </div>
+    <script src="config.js"></script>
+  </body>
+</html>
