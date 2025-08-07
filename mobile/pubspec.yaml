@@ -12,7 +12,9 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
+  crypto: ^3.0.6
   cryptography: ^2.7.0
+  encrypt: ^5.0.3
   device_info_plus: ^11.5.0
   http: ^1.4.0
   shared_preferences: ^2.5.3

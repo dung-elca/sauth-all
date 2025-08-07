@@ -3,7 +3,7 @@ import 'package:mobile/api_client.dart';
 import 'package:mobile/app_data.dart';
 import 'package:mobile/app_storage.dart';
 import 'package:mobile/device_util.dart';
-import 'package:mobile/ed25519_util.dart';
+import 'package:mobile/secure/ed25519_util.dart';
 
 void main() {
   runApp(const MyApp());

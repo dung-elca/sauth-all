@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobile/ed25519_util.dart';
+import 'package:mobile/secure/ed25519_util.dart';
 
 void main() {
   group('Ed25519Util Class Tests', () {

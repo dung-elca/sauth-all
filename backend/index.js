@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import express from "express";
 import path from "path";
 import * as db from "./database.js";
-import { ed25519Util } from "./ed25519_util.js";
+import { Ed25519Util } from "./my-crypto.js";
 dotenv.config();
 
 const app = express();
@@ -171,7 +171,7 @@ app.post("/mobile/register-device", (req, res) => {
   if (!public_key || !signature || !device_info || !timestamp)
     return res.status(400).json({ error: "Missing public_key or signature" });
   const message = `${device_info}:${timestamp}:${public_key}`;
-  const isValidSignature = ed25519Util.verify(message, signature, public_key);
+  const isValidSignature = Ed25519Util.verify(message, signature, public_key);
   console.log("Signature valid:", isValidSignature);
   if (!isValidSignature)
     return res.status(400).json({ error: "Invalid signature" });
