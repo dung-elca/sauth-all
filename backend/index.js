@@ -195,11 +195,19 @@ app.post("/mobile/verify-qrcode", async (req, res) => {
   if (foundRequest.client.webhook_url === undefined) {
     return res.status(403).json({ error: "Webhook URL is not set" });
   }
-  // Check if expired
-  if (new Date(foundRequest.request.expired_time) < new Date()) {
+  const expiredTime = foundRequest.request.expired_time;
+  if (expiredTime < Date.now()) {
     return res.status(410).json({ error: "Session expired" });
   }
-
+  // Verify signature
+  const message = `${session_id}:${nonce}:${device_id}:${expiredTime}`;
+  const isValidSignature = Ed25519Util.verify(
+    message,
+    signature,
+    device.public_key
+  );
+  if (!isValidSignature)
+    return res.status(400).json({ error: "Invalid signature" });
   // Update request with device_id and success status
   db.updateVerificationRequest(foundRequest.request.request_id, {
     device_id,
