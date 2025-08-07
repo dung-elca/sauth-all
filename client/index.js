@@ -145,7 +145,7 @@ app.post("/webhook", (req, res) => {
     return res.status(500).json({ error: "Configuration not set" });
   }
   const apiKey = req.headers["api_key"];
-  const envApiKey = process.env.API_KEY;
+  const envApiKey = config.apiKey;
   const {
     request_id,
     status,

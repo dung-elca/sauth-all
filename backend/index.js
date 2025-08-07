@@ -209,12 +209,15 @@ app.post("/mobile/verify-qrcode", async (req, res) => {
   if (!isValidSignature)
     return res.status(400).json({ error: "Invalid signature" });
   // Update request with device_id and success status
-  db.updateVerificationRequest(foundRequest.request.request_id, {
-    device_id,
-    status: "verified",
-  });
+  const request = db.updateVerificationRequest(
+    foundRequest.request.request_id,
+    {
+      device_id,
+      status: "verified",
+    }
+  );
   try {
-    await sendResultToClient(foundRequest.client, foundRequest.request, device);
+    await sendResultToClient(foundRequest.client, request);
   } catch (error) {
     console.error("Error sending result to client:", error);
   }
@@ -222,7 +225,7 @@ app.post("/mobile/verify-qrcode", async (req, res) => {
   res.json({ status: "success", message: "QR code verified" });
 });
 
-async function sendResultToClient(client, request, device) {
+async function sendResultToClient(client, request) {
   const apiUrl = client.webhook_url;
   const apiKey = client.api_key;
   const response = await axios.post(
@@ -230,12 +233,12 @@ async function sendResultToClient(client, request, device) {
     {
       request_id: request.request_id,
       status: request.status,
-      device_id: device.device_id,
+      device_id: request.device_id,
       metadata: request.metadata,
     },
     {
       headers: {
-        api_key: api_key,
+        api_key: apiKey,
         "Content-Type": "application/json",
       },
     }

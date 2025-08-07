@@ -24,11 +24,6 @@ class Ed25519Util {
   }
 
   static verify(message, signature, publicKey) {
-    console.log("Verifying signature:", {
-      message,
-      signature,
-      publicKey,
-    });
     return ed25519.verify(
       hexToBytes(signature),
       utf8ToBytes(message),

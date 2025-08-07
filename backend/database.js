@@ -207,9 +207,9 @@ export function updateVerificationRequest(request_id, { device_id, status }) {
     db.verification_requests[requestIndex].updated_at =
       new Date().toISOString();
     saveDB(db);
-    return true;
+    return db.verification_requests[requestIndex];
   }
-  return false;
+  return undefined;
 }
 
 export function findVerificationRequestBySession(session_id, nonce) {
