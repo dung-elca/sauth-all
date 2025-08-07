@@ -10,7 +10,7 @@ class ApiClient {
   Future<String> registerDevice(
     String publicKey,
     String signature,
-    String deviceInfo,
+    String deviceUuid,
     int timestamp,
   ) async {
     final response = await http.post(
@@ -20,7 +20,7 @@ class ApiClient {
         'public_key': publicKey,
         'signature': signature,
         'timestamp': timestamp,
-        'device_info': deviceInfo,
+        'device_uuid': deviceUuid,
       }),
     );
 

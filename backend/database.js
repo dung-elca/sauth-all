@@ -229,19 +229,25 @@ export function getClientVerificationRequests(client_id) {
 }
 
 // Device operations
-export function createDevice(public_key, signature, device_info) {
+export function createDevice(public_key, device_uuid) {
   const db = loadDB();
-  const device = {
-    device_id: "dev_" + randomString(32),
-    public_key,
-    signature,
-    device_info,
-    uuid: randomString(36),
-    created_at: new Date().toISOString(),
-  };
-  db.devices.push(device);
-  saveDB(db);
-  return device;
+  const existedDevice = db.devices.find((d) => d.device_uuid === device_uuid);
+  if (existedDevice) {
+    existedDevice.public_key = public_key;
+    saveDB(db);
+    return existedDevice;
+  } else {
+    const device = {
+      device_id: "dev_" + randomString(32),
+      public_key,
+      device_uuid,
+      uuid: randomString(36),
+      created_at: new Date().toISOString(),
+    };
+    db.devices.push(device);
+    saveDB(db);
+    return device;
+  }
 }
 
 export function findDeviceById(device_id) {

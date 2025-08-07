@@ -167,14 +167,14 @@ app.post("/qrcode/:request_id/refresh", (req, res) => {
 
 // --- SAuth Mobile APIs ---
 app.post("/mobile/register-device", (req, res) => {
-  const { public_key, signature, device_info, timestamp } = req.body;
-  if (!public_key || !signature || !device_info || !timestamp)
+  const { public_key, signature, device_uuid, timestamp } = req.body;
+  if (!public_key || !signature || !device_uuid || !timestamp)
     return res.status(400).json({ error: "Missing public_key or signature" });
-  const message = `${device_info}:${timestamp}:${public_key}`;
+  const message = `${device_uuid}:${timestamp}:${public_key}`;
   const isValidSignature = Ed25519Util.verify(message, signature, public_key);
   if (!isValidSignature)
     return res.status(400).json({ error: "Invalid signature" });
-  const device = db.createDevice(public_key, signature, device_info);
+  const device = db.createDevice(public_key, device_uuid);
   res.json({ device_id: device.device_id });
 });
 

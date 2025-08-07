@@ -29,19 +29,19 @@ class MyHomePage extends StatelessWidget {
 
   Future<void> _registerDevice() async {
     final keyPair = await ed25519Util.generateKeyPair();
-    final deviceInfo = await getDeviceUUID();
-    if (deviceInfo == null) {
+    final deviceUUID = await getDeviceUUID();
+    if (deviceUUID == null) {
       throw Exception('Failed to get device UUID');
     }
     final timestamp = DateTime.now().microsecondsSinceEpoch;
     final signature = await ed25519Util.sign(
-      "$deviceInfo:$timestamp:${keyPair.publicKey}",
+      "$deviceUUID:$timestamp:${keyPair.publicKey}",
       keyPair.privateKey,
     );
     final deviceId = await apiClient.registerDevice(
       keyPair.publicKey,
       signature,
-      deviceInfo,
+      deviceUUID,
       timestamp,
     );
     await appStorage.saveAppData(
@@ -53,7 +53,9 @@ class MyHomePage extends StatelessWidget {
 
   void _scan() async {
     final appData = await appStorage.getAppData();
-    await _registerDevice();
+    if (appData == null) {
+      await _registerDevice();
+    }
     await _verifyQrCode();
   }
 
