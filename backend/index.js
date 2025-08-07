@@ -205,7 +205,11 @@ app.post("/mobile/verify-qrcode", async (req, res) => {
     device_id,
     status: "verified",
   });
-  await sendResultToClient(foundRequest.client, foundRequest.request, device);
+  try {
+    await sendResultToClient(foundRequest.client, foundRequest.request, device);
+  } catch (error) {
+    console.error("Error sending result to client:", error);
+  }
 
   res.json({ status: "success", message: "QR code verified" });
 });
