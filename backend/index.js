@@ -172,7 +172,6 @@ app.post("/mobile/register-device", (req, res) => {
     return res.status(400).json({ error: "Missing public_key or signature" });
   const message = `${device_info}:${timestamp}:${public_key}`;
   const isValidSignature = Ed25519Util.verify(message, signature, public_key);
-  console.log("Signature valid:", isValidSignature);
   if (!isValidSignature)
     return res.status(400).json({ error: "Invalid signature" });
   const device = db.createDevice(public_key, signature, device_info);
