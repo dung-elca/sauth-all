@@ -1,6 +1,6 @@
 # SAuth - Secure Authentication Solution with QR Code and Mobile App
 
-SAuth is a secure and convenient authentication solution using QR codes and a mobile app. It is designed for businesses that require strong security for transactions, logins, or any sensitive actions.
+SAuth is a secure and convenient authentication solution using QR codes and a mobile app. For example, it can be used to verify users when they register to buy lottery tickets to access a football match, ensuring only authorized participants can join these activities.
 
 # Architecture Overview
 
@@ -10,9 +10,9 @@ For a detailed architecture and flow, please see [OVERVIEW.md](OVERVIEW.md).
 
 The following sections (1, 2, 3, 4) illustrate a demo flow of the SAuth solution, including the main tools and user experience.
 
-## 1. Server Admin Tool
+## 1. Server Admin Tool (Client Configuration & Settings)
 
-This is the backend administration tool, allowing configuration, monitoring, and management of authentication sessions.
+This section demonstrates how to configure and set up a specific client using the server admin tool, including authentication parameters, webhook API key for verification results, and other settings.
 
 ![Server Admin Tool](img/server-admin-tool.png)
 
@@ -24,11 +24,11 @@ Clients can configure authentication parameters, QR code expiration time, webhoo
 
 ## 3. Web Authentication Interface
 
-When a customer needs to verify an action, they are redirected to the authentication web page, as shown below:
+This is an example of a client who wants to participate in a lucky draw to buy football match tickets. The user is redirected to the authentication web page below:
 
 ![Client Web](img/client-web.png)
 
-Here, the customer can verify transactions or log in using the SAuth solution.
+The user must click "Continue" to start the verification process. When they do, the system will display a QR code in step 4, managed by SAuth.
 
 ## 4. QR Code Authentication Flow
 
@@ -41,3 +41,7 @@ The user opens the SAuth mobile app, scans the QR code, and completes the authen
 ---
 
 SAuth enhances security, reduces fraud risks, and improves user experience.
+
+---
+
+By simply improving the device registration process for each client, we can easily build a dedicated mobile SDK for them to integrate and use.
