@@ -89,8 +89,8 @@ class MyHomePage extends StatelessWidget {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text('A Request Detected'),
-            content: const Text('Would you like to accept this request?'),
+            title: const Text('A QRcode Detected'),
+            content: const Text('Would you like to accept this qrcode?'),
             actions: [
               TextButton(
                 onPressed: () {
@@ -210,13 +210,29 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sauth Mobile')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            _scan(context);
-          },
-          child: const Text('Scan'),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF7FDBFF), // light blue
+              Color(0xFF0074D9), // dark blue
+            ],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            spacing: 24,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset('assets/logo.png', width: 160, height: 160),
+              ElevatedButton(
+                onPressed: () => _scan(context),
+                child: Text('Scan QR Code'),
+              ),
+            ],
+          ),
         ),
       ),
     );

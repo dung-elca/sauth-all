@@ -14,24 +14,26 @@ class QrcodeScanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Scan QR Code'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () {
-              onCanceled();
+      body: Stack(
+        children: [
+          MobileScanner(
+            onDetect: (barcodes) async {
+              final code = barcodes.barcodes.firstOrNull?.rawValue;
+              if (code != null && code.isNotEmpty) {
+                onCodeDetected(code);
+              }
             },
           ),
+          Positioned(
+            top: 16,
+            left: 8,
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white, size: 40),
+              onPressed: onCanceled,
+              tooltip: 'Close',
+            ),
+          ),
         ],
-      ),
-      body: MobileScanner(
-        onDetect: (barcodes) async {
-          final code = barcodes.barcodes.firstOrNull?.rawValue;
-          if (code != null && code.isNotEmpty) {
-            onCodeDetected(code);
-          }
-        },
       ),
     );
   }
