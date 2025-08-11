@@ -30,6 +30,10 @@ sequenceDiagram
     SAuthBackend->>SAuthApp: Return device_id
 ```
 
+## Note
+
+Device registration is secured by an encryption algorithm that is protected within both the mobile app and backend. Without knowledge of this encryption algorithm, device registration cannot be performed, ensuring only trusted devices can join the system.
+
 # Authenticate request
 
 ```mermaid
@@ -65,3 +69,9 @@ sequenceDiagram
     SAuthApp->>SAuthBackend: 8. Scan QR code, sign (session_id, nonce), send verification (session_id, nonce, signature, device_id)
     SAuthBackend->>ClientApp: 9. Webhook to Client App if verification successful
 ```
+
+---
+
+## Note
+
+Verification (Step 8) can also be protected by a special data encryption layer, similar to device registration. Without knowledge of this encryption algorithm, performing verification becomes extremely difficult, ensuring only authorized parties can complete the process.
