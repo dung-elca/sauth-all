@@ -1,6 +1,8 @@
+const host = "http://localhost:3001"; // Adjust the host as needed
+
 async function fetchConfigStatus() {
   try {
-    const res = await fetch("/status");
+    const res = await fetch(`${host}/status`);
     if (res.status === 200) {
       return await res.json();
     } else {
@@ -89,7 +91,7 @@ document.getElementById("configForm").onsubmit = async function (e) {
   msg.className = "config-msg";
   msg.innerHTML = "";
   try {
-    const res = await fetch("/config", {
+    const res = await fetch(`${host}/config`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

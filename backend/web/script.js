@@ -1,6 +1,7 @@
 // Admin Dashboard JavaScript
 class SAuthAdmin {
   constructor() {
+    this.host = "http://localhost:3000"; // Default host, can be overridden by environment variable
     this.clients = [];
     this.currentEditingClient = null;
     this.init();
@@ -49,7 +50,7 @@ class SAuthAdmin {
 
   async loadClients() {
     try {
-      const response = await fetch("/client");
+      const response = await fetch(`${this.host}/client`);
       if (response.ok) {
         this.clients = await response.json();
         this.renderClients();
@@ -204,7 +205,7 @@ class SAuthAdmin {
   }
 
   async createClient(formData) {
-    const response = await fetch("/client", {
+    const response = await fetch(`${this.host}/client`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -226,7 +227,7 @@ class SAuthAdmin {
   }
 
   async updateClient(clientId, formData) {
-    const response = await fetch("/client", {
+    const response = await fetch(`${this.host}/client`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -260,7 +261,7 @@ class SAuthAdmin {
 
   async callDeleteAPI(clientId) {
     try {
-      const response = await fetch(`/client/${clientId}`, {
+      const response = await fetch(`${this.host}/client/${clientId}`, {
         method: "DELETE",
       });
 
