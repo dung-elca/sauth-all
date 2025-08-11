@@ -253,6 +253,7 @@ paths:
     post:
       tags: [SAuth Mobile]
       summary: SAuth Mobile registers a new device
+      description: Note data in body is a special encoded string that contains public key signature and device information (device_uuid, metadata)
       requestBody:
         required: true
         content:
@@ -260,15 +261,10 @@ paths:
             schema:
               type: object
               properties:
-                public_key:
+                data:
                   type: string
-                signature:
-                  type: string
-                device_info:
-                  type: object
               required:
-                - public_key
-                - signature
+                - data
       responses:
         "200":
           description: Device registered
@@ -279,10 +275,12 @@ paths:
                 properties:
                   device_id:
                     type: string
+
   /mobile/verify-qrcode:
     post:
       tags: [SAuth Mobile]
       summary: SAuth Mobile verifies QR code
+      description: Note data in body is a special encoded string that contains session_id nonce signature and device_id
       requestBody:
         required: true
         content:
@@ -290,19 +288,10 @@ paths:
             schema:
               type: object
               properties:
-                session_id:
-                  type: string
-                nonce:
-                  type: string
-                signature:
-                  type: string
-                device_id:
+                data:
                   type: string
               required:
-                - session_id
-                - nonce
-                - signature
-                - device_id
+                - data
       responses:
         "200":
           description: Verification result
