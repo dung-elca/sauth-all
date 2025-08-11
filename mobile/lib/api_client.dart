@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:mobile/secure/aes_util.dart';
 
 class ApiClient {
   final String baseUrl;
@@ -17,10 +18,15 @@ class ApiClient {
       Uri.parse('$baseUrl/mobile/register-device'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'public_key': publicKey,
-        'signature': signature,
-        'timestamp': timestamp,
-        'device_uuid': deviceUuid,
+        'data': AESUtil.encrypt(
+          jsonEncode({
+            'public_key': publicKey,
+            'signature': signature,
+            'timestamp': timestamp,
+            'device_uuid': deviceUuid,
+          }),
+          "sauth-secret",
+        ),
       }),
     );
 
@@ -42,11 +48,16 @@ class ApiClient {
       Uri.parse('$baseUrl/mobile/verify-qrcode'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'session_id': sessionId,
-        'nonce': nonce,
-        'signature': signature,
-        'device_id': deviceId,
-        'timestamp': timestamp,
+        'data': AESUtil.encrypt(
+          jsonEncode({
+            'session_id': sessionId,
+            'nonce': nonce,
+            'signature': signature,
+            'device_id': deviceId,
+            'timestamp': timestamp,
+          }),
+          "sauth-secret",
+        ),
       }),
     );
 
@@ -58,4 +69,4 @@ class ApiClient {
   }
 }
 
-var apiClient = ApiClient('http://192.168.1.12:3000');
+var apiClient = ApiClient('http://192.168.1.8:3000');

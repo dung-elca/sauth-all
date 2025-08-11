@@ -19,7 +19,12 @@ export function loadDB() {
       return initDB;
     }
     const data = fs.readFileSync(DB_FILE, "utf8");
-    return JSON.parse(data);
+    const json = JSON.parse(data);
+    if (json.clients == undefined) json.clients = [];
+    if (json.devices == undefined) json.devices = [];
+    if (json.verification_requests == undefined)
+      json.verification_requests = [];
+    return json;
   } catch (error) {
     console.error("Error loading database:", error);
     return initDB;

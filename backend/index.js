@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import express from "express";
 import path from "path";
 import * as db from "./database.js";
-import { Ed25519Util } from "./my-crypto.js";
+import { AESUtil, Ed25519Util } from "./my-crypto.js";
 dotenv.config();
 
 const app = express();
@@ -167,7 +167,10 @@ app.post("/qrcode/:request_id/refresh", (req, res) => {
 
 // --- SAuth Mobile APIs ---
 app.post("/mobile/register-device", (req, res) => {
-  const { public_key, signature, device_uuid, timestamp } = req.body;
+  const { data } = req.body;
+  const decrypted = AESUtil.decrypt(data, "sauth-secret");
+  const { public_key, signature, device_uuid, timestamp } =
+    JSON.parse(decrypted);
   if (!public_key || !signature || !device_uuid || !timestamp)
     return res.status(400).json({ error: "Missing public_key or signature" });
   const message = `${device_uuid}:${timestamp}:${public_key}`;
@@ -179,7 +182,9 @@ app.post("/mobile/register-device", (req, res) => {
 });
 
 app.post("/mobile/verify-qrcode", async (req, res) => {
-  const { session_id, nonce, signature, device_id } = req.body;
+  const { data } = req.body;
+  const decrypted = AESUtil.decrypt(data, "sauth-secret");
+  const { session_id, nonce, signature, device_id } = JSON.parse(decrypted);
   if (!session_id || !nonce || !signature || !device_id)
     return res.status(400).json({ error: "Missing fields" });
 

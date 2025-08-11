@@ -94,6 +94,7 @@ class MyHomePage extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () {
+                  popNavigate(context);
                   _acceptCode(
                     context,
                     sessionId: sessionId,
@@ -101,7 +102,6 @@ class MyHomePage extends StatelessWidget {
                     expiredTime: expiredTime,
                     appData: appData,
                   );
-                  popNavigate(context);
                 },
                 child: const Text('Accept'),
               ),
@@ -194,6 +194,11 @@ class MyHomePage extends StatelessWidget {
                 );
               }
             } catch (e) {
+              _showMessageDialog(
+                context,
+                title: "Error",
+                message: e.toString(),
+              );
               // DO NOTHING
             }
           },

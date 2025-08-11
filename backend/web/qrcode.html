@@ -172,11 +172,10 @@
             nonce: this.sessionData.nonce,
             expired_time: this.sessionData.expired_time,
           };
-
+          console.log("QR Data:", qrData);
           const qrContainer = document.getElementById("qrcode");
           qrContainer.innerHTML = "";
 
-          // Sử dụng QRCode.js (GitHub) đúng chuẩn
           new QRCode(qrContainer, {
             text: JSON.stringify(qrData),
             width: 200,
@@ -197,7 +196,7 @@
             const timeLeft = expiredTime - Date.now();
 
             if (timeLeft <= 0) {
-              this.handleExpired();
+              this.handleExpiredWithRetry();
               return;
             }
 
@@ -237,12 +236,8 @@
               return;
             }
 
-            if (Date.now() > data.expired_time) {
-              if (data.canRetry) {
-                this.handleExpiredWithRetry();
-              } else {
-                this.handleExpiredFinal();
-              }
+            if (Date.now() > data.expired_time && !data.canRetry) {
+              this.handleExpiredFinal();
             }
           } catch (error) {
             console.error("Error checking status:", error);
