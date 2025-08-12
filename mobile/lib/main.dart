@@ -185,7 +185,7 @@ class MyHomePage extends StatelessWidget {
                   sessionId: sessionId,
                   nonce: nonce,
                   expiredTime: expiredTime,
-                  appData: appData!,
+                  appData: appData,
                 );
               }
             } catch (e) {
