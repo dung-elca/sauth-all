@@ -1,9 +1,11 @@
+const HOST = "http://localhost:3001";
+
 let currentLotId = "your_lot_id_here";
 let checkInterval = null;
 
 async function checkVerificationStatus() {
   try {
-    const response = await fetch("/check", {
+    const response = await fetch(`${HOST}/check`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -38,7 +40,7 @@ async function checkVerificationStatus() {
 }
 
 document.getElementById("verifyBtn").onclick = function () {
-  fetch("/verify", {
+  fetch(`${HOST}/verify`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

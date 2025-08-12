@@ -4,11 +4,11 @@ const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 const { randomBytes } = require("crypto");
-require("dotenv").config();
+
+const PORT = 3001;
+const VERIFY_API_HOST = "http://localhost:3000";
 
 const app = express();
-const PORT = process.env.PORT;
-
 app.use(cors());
 app.use(express.json());
 
@@ -100,9 +100,8 @@ app.post("/verify", async (req, res) => {
 });
 
 async function verifyRequestToApi(lot_id) {
-  const apiUrl = process.env.VERIFY_API_HOST;
   const response = await axios.post(
-    `${apiUrl}/verify-request`,
+    `${VERIFY_API_HOST}/verify-request`,
     {
       max_try: config.max_try,
       expired_duration: config.expired_duration,

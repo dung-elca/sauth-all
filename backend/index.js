@@ -1,14 +1,12 @@
 import axios from "axios";
 import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
 import path from "path";
 import * as db from "./database.js";
 import { AESUtil, Ed25519Util } from "./my-crypto.js";
-dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
