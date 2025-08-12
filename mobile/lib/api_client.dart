@@ -29,7 +29,6 @@ class ApiClient {
         ),
       }),
     );
-
     if (response.statusCode == 200) {
       return jsonDecode(response.body)["device_id"] as String;
     } else {
@@ -69,4 +68,4 @@ class ApiClient {
   }
 }
 
-var apiClient = ApiClient('http://192.168.1.8:3000');
+var apiClient = ApiClient('http://sg.dungnguyen.uk:3000');

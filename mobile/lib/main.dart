@@ -173,7 +173,7 @@ class MyHomePage extends StatelessWidget {
           onCanceled: () {
             popNavigate(context);
           },
-          onCodeDetected: (code) async {
+          onCodeDetected: (code) {
             try {
               final json = jsonDecode(code) as Map<String, dynamic>;
               final sessionId = json['session_id'] as String?;
@@ -194,11 +194,6 @@ class MyHomePage extends StatelessWidget {
                 );
               }
             } catch (e) {
-              _showMessageDialog(
-                context,
-                title: "Error",
-                message: e.toString(),
-              );
               // DO NOTHING
             }
           },
