@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
-  Future<void> _registerDevice() async {
+  Future<AppData> _registerDevice() async {
     final keyPair = await ed25519Util.generateKeyPair();
     final deviceUUID = await getDeviceUUID();
     if (deviceUUID == null) {
@@ -48,9 +48,9 @@ class MyHomePage extends StatelessWidget {
       deviceUUID,
       timestamp,
     );
-    await appStorage.saveAppData(
-      AppData(privateKey: keyPair.privateKey, deviceId: deviceId),
-    );
+    final appData = AppData(privateKey: keyPair.privateKey, deviceId: deviceId);
+    await appStorage.saveAppData(appData);
+    return appData;
   }
 
   void _showMessageDialog(
@@ -84,38 +84,36 @@ class MyHomePage extends StatelessWidget {
     required int expiredTime,
     required AppData appData,
   }) async {
-    if (DateTime.now().millisecondsSinceEpoch < expiredTime) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('A QRcode Detected'),
-            content: const Text('Would you like to accept this qrcode?'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  popNavigate(context);
-                  _acceptCode(
-                    context,
-                    sessionId: sessionId,
-                    nonce: nonce,
-                    expiredTime: expiredTime,
-                    appData: appData,
-                  );
-                },
-                child: const Text('Accept'),
-              ),
-              TextButton(
-                onPressed: () {
-                  popNavigate(context);
-                },
-                child: const Text('Cancel'),
-              ),
-            ],
-          );
-        },
-      );
-    }
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('A QRcode Detected'),
+          content: const Text('Would you like to accept this qrcode?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                popNavigate(context);
+                _acceptCode(
+                  context,
+                  sessionId: sessionId,
+                  nonce: nonce,
+                  expiredTime: expiredTime,
+                  appData: appData,
+                );
+              },
+              child: const Text('Accept'),
+            ),
+            TextButton(
+              onPressed: () {
+                popNavigate(context);
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _acceptCode(
@@ -162,10 +160,7 @@ class MyHomePage extends StatelessWidget {
   }
 
   void _scan(BuildContext context) async {
-    final appData = await appStorage.getAppData();
-    if (appData == null) {
-      await _registerDevice();
-    }
+    final appData = await appStorage.getAppData() ?? await _registerDevice();
     if (context.mounted) {
       presentNavigate(
         context,
