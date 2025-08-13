@@ -31,15 +31,16 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
-  Future<AppData> _registerDevice() async {
+  Future<AppData> _registerDevice(BuildContext context) async {
     final keyPair = await ed25519Util.generateKeyPair();
     final deviceUUID = await getDeviceUUID();
+    final clientId = await appStorage.getClientId();
     if (deviceUUID == null) {
       throw Exception('Failed to get device UUID');
     }
     final timestamp = DateTime.now().microsecondsSinceEpoch;
     final signature = await ed25519Util.sign(
-      "$deviceUUID:$timestamp:${keyPair.publicKey}",
+      "$deviceUUID:$timestamp:${keyPair.publicKey}:$clientId",
       keyPair.privateKey,
     );
     final deviceId = await apiClient.registerDevice(
@@ -47,6 +48,19 @@ class MyHomePage extends StatelessWidget {
       signature,
       deviceUUID,
       timestamp,
+      clientId,
+      (Widget widget) {
+        showGeneralDialog(
+          context: context,
+          barrierDismissible: false,
+          pageBuilder: (context, __, ___) {
+            return widget;
+          },
+        );
+      },
+      () {
+        Navigator.pop(context);
+      },
     );
     final appData = AppData(privateKey: keyPair.privateKey, deviceId: deviceId);
     await appStorage.saveAppData(appData);
@@ -125,8 +139,9 @@ class MyHomePage extends StatelessWidget {
   }) async {
     final timestamp = DateTime.now().microsecondsSinceEpoch;
     final deviceId = appData.deviceId;
+    final clientId = await appStorage.getClientId();
     final signature = await ed25519Util.sign(
-      "$sessionId:$nonce:$deviceId:$expiredTime",
+      "$sessionId:$nonce:$deviceId:$expiredTime:$timestamp:$clientId",
       appData.privateKey,
     );
     try {
@@ -136,6 +151,19 @@ class MyHomePage extends StatelessWidget {
         signature,
         deviceId,
         timestamp,
+        clientId,
+        (Widget widget) {
+          showGeneralDialog(
+            context: context,
+            barrierDismissible: false,
+            pageBuilder: (context, __, ___) {
+              return widget;
+            },
+          );
+        },
+        () {
+          Navigator.pop(context);
+        },
       );
       if (context.mounted) {
         if (status == 'success') {
@@ -160,8 +188,11 @@ class MyHomePage extends StatelessWidget {
   }
 
   void _scan(BuildContext context) async {
-    final appData = await appStorage.getAppData() ?? await _registerDevice();
-    if (context.mounted) {
+    try {
+      var appData = await appStorage.getAppData();
+      if (!context.mounted) return;
+      appData ??= await _registerDevice(context);
+      if (!context.mounted) return;
       presentNavigate(
         context,
         QrcodeScanner(
@@ -185,7 +216,7 @@ class MyHomePage extends StatelessWidget {
                   sessionId: sessionId,
                   nonce: nonce,
                   expiredTime: expiredTime,
-                  appData: appData,
+                  appData: appData!,
                 );
               }
             } catch (e) {
@@ -194,6 +225,10 @@ class MyHomePage extends StatelessWidget {
           },
         ),
       );
+    } catch (e) {
+      if (context.mounted) {
+        _showMessageDialog(context, title: "Error", message: e.toString());
+      }
     }
   }
 

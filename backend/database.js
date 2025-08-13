@@ -217,15 +217,15 @@ export function updateVerificationRequest(request_id, { device_id, status }) {
   return undefined;
 }
 
-export function findVerificationRequestBySession(session_id, nonce) {
+export function findVerificationRequest(client_id, session_id, nonce) {
   const db = loadDB();
   const request = db.verification_requests.find(
-    (r) => r.session_id === session_id && r.nonce === nonce
+    (r) =>
+      r.session_id === session_id &&
+      r.nonce === nonce &&
+      r.client_id === client_id
   );
-  if (!request) return null;
-
-  const client = db.clients.find((c) => c.client_id === request.client_id);
-  return { client, request };
+  return request;
 }
 
 export function getClientVerificationRequests(client_id) {

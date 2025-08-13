@@ -249,11 +249,43 @@ paths:
                     type: string
 
   # --- SAuth Mobile APIs ---
+  /mobile/{client_id}:
+    get:
+      tags: [SAuth Mobile]
+      summary: Get client setting by client id
+      parameters:
+        - name: client_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: New QR code session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enable_datadome:
+                    type: boolean
+                  enable_recaptcha:
+                    type: boolean
+        "404":
+          description: Request not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
   /mobile/register-device:
     post:
       tags: [SAuth Mobile]
       summary: SAuth Mobile registers a new device
-      description: Note data in body is a special encoded string that contains public key signature and device information (device_uuid, metadata)
+      description: Note data in body is a special encoded string that contains clientId, public key signature and device information (device_uuid, metadata)
       requestBody:
         required: true
         content:
@@ -280,7 +312,7 @@ paths:
     post:
       tags: [SAuth Mobile]
       summary: SAuth Mobile verifies QR code
-      description: Note data in body is a special encoded string that contains session_id nonce signature and device_id
+      description: Note data in body is a special encoded string that contains clientId, session_id nonce signature and device_id
       requestBody:
         required: true
         content:

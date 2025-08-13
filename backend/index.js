@@ -1,3 +1,4 @@
+import { DatadomeExpress } from "@datadome/module-express";
 import axios from "axios";
 import cors from "cors";
 import express from "express";
@@ -11,6 +12,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use(express.static("web"));
+
+const datadomeClient = new DatadomeExpress("KKCpsZoVErvnjFj");
 
 // --- Client APIs ---
 app.post("/client", (req, res) => {
@@ -164,14 +167,50 @@ app.post("/qrcode/:request_id/refresh", (req, res) => {
 });
 
 // --- SAuth Mobile APIs ---
-app.post("/mobile/register-device", (req, res) => {
+
+const checkDatadome = async (client_id, req, res) => {
+  const client = db.findClientById(client_id);
+  if (!client) return res.status(404).json({ error: "Client not found" });
+
+  const isDatadomeEnabled = client?.enable_datadome;
+  if (isDatadomeEnabled) {
+    const { result, enrichedHeaders, error } =
+      await datadomeClient.handleRequest(req, res);
+    if (result === "ALLOW") {
+      console.log("Request allowed");
+      if (error) {
+        console.error(error);
+      }
+      return true; // Request allowed
+    } else {
+      return res.status(403).json({ error: "Request challenged" });
+    }
+  }
+  return true; // Datadome not enabled, allow request
+};
+
+app.get("/mobile/:client_id", async (req, res) => {
+  const { client_id } = req.params;
+  if (!client_id) return res.status(400).json({ error: "Missing client_id" });
+  const client = db.findClientById(client_id);
+  if (!client) return res.status(404).json({ error: "Client not found" });
+  res.json({
+    enable_datadome: client.enable_datadome || false,
+    enable_recaptcha: client.enable_recaptcha || false,
+  });
+});
+
+app.post("/mobile/register-device", async (req, res) => {
   const { data } = req.body;
   const decrypted = AESUtil.decrypt(data, "sauth-secret");
-  const { public_key, signature, device_uuid, timestamp } =
+  const { public_key, signature, device_uuid, timestamp, client_id } =
     JSON.parse(decrypted);
-  if (!public_key || !signature || !device_uuid || !timestamp)
+  if (!public_key || !signature || !device_uuid || !timestamp || !client_id)
     return res.status(400).json({ error: "Missing public_key or signature" });
-  const message = `${device_uuid}:${timestamp}:${public_key}`;
+  if ((await checkDatadome(client_id, req, res)) != true) {
+    return; // If Datadome check fails, exit early
+  }
+  const message = `${device_uuid}:${timestamp}:${public_key}:${client_id}`;
   const isValidSignature = Ed25519Util.verify(message, signature, public_key);
   if (!isValidSignature)
     return res.status(400).json({ error: "Invalid signature" });
@@ -182,28 +221,37 @@ app.post("/mobile/register-device", (req, res) => {
 app.post("/mobile/verify-qrcode", async (req, res) => {
   const { data } = req.body;
   const decrypted = AESUtil.decrypt(data, "sauth-secret");
-  const { session_id, nonce, signature, device_id } = JSON.parse(decrypted);
-  if (!session_id || !nonce || !signature || !device_id)
+  const { session_id, nonce, signature, device_id, timestamp, client_id } =
+    JSON.parse(decrypted);
+  if (
+    !session_id ||
+    !nonce ||
+    !signature ||
+    !device_id ||
+    !timestamp ||
+    !client_id
+  )
     return res.status(400).json({ error: "Missing fields" });
-
-  // Find device
   const device = db.findDeviceById(device_id);
   if (!device) return res.status(404).json({ error: "Device not found" });
-
+  const client = db.findClientById(client_id);
+  if (!client) return res.status(404).json({ error: "Client not found" });
+  if ((await checkDatadome(client_id, req, res)) != true) {
+    return; // If Datadome check fails, exit early
+  }
   // Find verification request by session_id and nonce
-  const foundRequest = db.findVerificationRequestBySession(session_id, nonce);
-  if (!foundRequest)
-    return res.status(404).json({ error: "Session not found" });
+  let request = db.findVerificationRequest(client_id, session_id, nonce);
+  if (!request) return res.status(404).json({ error: "Request not found" });
 
-  if (foundRequest.client.webhook_url === undefined) {
+  if (client.webhook_url === undefined) {
     return res.status(403).json({ error: "Webhook URL is not set" });
   }
-  const expiredTime = foundRequest.request.expired_time;
+  const expiredTime = request.expired_time;
   if (expiredTime < Date.now()) {
     return res.status(410).json({ error: "Session expired" });
   }
   // Verify signature
-  const message = `${session_id}:${nonce}:${device_id}:${expiredTime}`;
+  const message = `${session_id}:${nonce}:${device_id}:${expiredTime}:${timestamp}:${client_id}`;
   const isValidSignature = Ed25519Util.verify(
     message,
     signature,
@@ -212,15 +260,12 @@ app.post("/mobile/verify-qrcode", async (req, res) => {
   if (!isValidSignature)
     return res.status(400).json({ error: "Invalid signature" });
   // Update request with device_id and success status
-  const request = db.updateVerificationRequest(
-    foundRequest.request.request_id,
-    {
-      device_id,
-      status: "verified",
-    }
-  );
+  request = db.updateVerificationRequest(request.request_id, {
+    device_id,
+    status: "verified",
+  });
   try {
-    await sendResultToClient(foundRequest.client, request);
+    await sendResultToClient(client, request);
   } catch (error) {
     console.error("Error sending result to client:", error);
   }

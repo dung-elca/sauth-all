@@ -7,6 +7,7 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "@datadome/module-express": "^2.2.0",
     "@noble/curves": "^1.9.6",
     "axios": "^1.11.0",
     "cors": "^2.8.5",
