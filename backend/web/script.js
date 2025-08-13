@@ -1,4 +1,4 @@
-const HOST = "http://localhost:3000";
+const HOST = "http://sg.dungnguyen.uk:3000";
 
 class SAuthAdmin {
   constructor() {

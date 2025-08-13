@@ -131,4 +131,4 @@ class ApiClient {
   }
 }
 
-var apiClient = ApiClient('http://192.168.0.178:3000');
+var apiClient = ApiClient('http://sg.dungnguyen.uk:3000');

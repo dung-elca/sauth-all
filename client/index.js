@@ -6,7 +6,7 @@ const path = require("path");
 const { randomBytes } = require("crypto");
 
 const PORT = 3001;
-const VERIFY_API_HOST = "http://localhost:3000";
+const SAUTH_SERVER_URL = "http://sg.dungnguyen.uk:3000";
 
 const app = express();
 app.use(cors());
@@ -101,7 +101,7 @@ app.post("/verify", async (req, res) => {
 
 async function verifyRequestToApi(lot_id) {
   const response = await axios.post(
-    `${VERIFY_API_HOST}/verify-request`,
+    `${SAUTH_SERVER_URL}/verify-request`,
     {
       max_try: config.max_try,
       expired_duration: config.expired_duration,

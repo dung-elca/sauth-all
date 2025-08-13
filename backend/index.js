@@ -114,7 +114,7 @@ app.post("/verify-request", (req, res) => {
   if (!request) return res.status(404).json({ error: "Client not found" });
 
   res.json({
-    url: `http://localhost:${PORT}/verify/${request.request_id}`,
+    url: `http://sg.dungnguyen.uk:${PORT}/verify/${request.request_id}`,
     request_id: request.request_id,
   });
 });

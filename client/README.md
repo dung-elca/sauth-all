@@ -10,4 +10,4 @@
    ```sh
    node index.js
    ```
-3. Open http://localhost:3000 in your browser to see 'Hello World'.
+3. Open http://sg.dungnguyen.uk:3000 in your browser to see 'Hello World'.

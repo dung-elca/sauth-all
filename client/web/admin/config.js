@@ -1,4 +1,4 @@
-const HOST = "http://localhost:3001";
+const HOST = "http://sg.dungnguyen.uk:3001";
 
 async function fetchConfigStatus() {
   try {
