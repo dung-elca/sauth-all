@@ -183,18 +183,18 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         _showMessageDialog(context, title: "Error", message: e.toString());
       }
     }
   }
 
-  void _scan(BuildContext context) async {
+  void _scan() async {
     try {
       var appData = await appStorage.getAppData();
-      if (!context.mounted) return;
+      if (!mounted) return;
       appData ??= await _registerDevice();
-      if (!context.mounted) return;
+      if (!mounted) return;
       presentNavigate(
         context,
         QrcodeScanner(
@@ -227,7 +227,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         _showMessageDialog(context, title: "Error", message: e.toString());
       }
     }
@@ -254,7 +254,7 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Image.asset('assets/logo.png', width: 160, height: 160),
               ElevatedButton(
-                onPressed: () => _scan(context),
+                onPressed: () => _scan(),
                 child: Text('Scan QR Code'),
               ),
             ],
