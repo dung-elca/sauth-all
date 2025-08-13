@@ -28,10 +28,15 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
-  Future<AppData> _registerDevice(BuildContext context) async {
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  Future<AppData> _registerDevice() async {
     final keyPair = await ed25519Util.generateKeyPair();
     final deviceUUID = await getDeviceUUID();
     final clientId = await appStorage.getClientId();
@@ -91,8 +96,7 @@ class MyHomePage extends StatelessWidget {
     );
   }
 
-  void _acceptCodePopup(
-    BuildContext context, {
+  void _acceptCodePopup({
     required String sessionId,
     required String nonce,
     required int expiredTime,
@@ -107,14 +111,13 @@ class MyHomePage extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                popNavigate(context);
                 _acceptCode(
-                  context,
                   sessionId: sessionId,
                   nonce: nonce,
                   expiredTime: expiredTime,
                   appData: appData,
                 );
+                popNavigate(context);
               },
               child: const Text('Accept'),
             ),
@@ -130,8 +133,7 @@ class MyHomePage extends StatelessWidget {
     );
   }
 
-  void _acceptCode(
-    BuildContext context, {
+  void _acceptCode({
     required String sessionId,
     required String nonce,
     required int expiredTime,
@@ -165,7 +167,7 @@ class MyHomePage extends StatelessWidget {
           Navigator.pop(context);
         },
       );
-      if (context.mounted) {
+      if (mounted) {
         if (status == 'success') {
           _showMessageDialog(
             context,
@@ -191,7 +193,7 @@ class MyHomePage extends StatelessWidget {
     try {
       var appData = await appStorage.getAppData();
       if (!context.mounted) return;
-      appData ??= await _registerDevice(context);
+      appData ??= await _registerDevice();
       if (!context.mounted) return;
       presentNavigate(
         context,
@@ -212,7 +214,6 @@ class MyHomePage extends StatelessWidget {
                       expiredTime + 10 * 1000) {
                 popNavigate(context);
                 _acceptCodePopup(
-                  context,
                   sessionId: sessionId,
                   nonce: nonce,
                   expiredTime: expiredTime,
