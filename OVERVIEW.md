@@ -1,38 +1,14 @@
 # Overview
 
-```mermaid
-flowchart TD
-A[Client App] -->|Send verification request| B[SAuth Backend]
-B -->|Generate QR code, return QR URL| C[SAuth Web ]
-C -->|Display QR code| D[User ]
-D -->|Scan QR code| E[SAuth App ]
-E -->|Register device, sign session, verify| B
-B -->|Webhook verification result| A
-```
+## Components
 
-# Register device
+- **SAuth Backend**: The core authentication server, responsible for managing sessions, device registration, verification logic, and integration with security services (e.g., DataDome, Recaptcha).
+- **SAuth QRCode**: The web interface that generates and displays QR codes for user authentication. It interacts with the backend to create session-specific QR codes and handles user actions on the web.
+- **SAuth Mobile**: The mobile application used by end-users to scan QR codes, register devices, and perform secure authentication. It implements cryptographic operations and communicates securely with the backend. SAuth Mobile can also be built as a dedicated SDK for each client, making integration seamless and customizable.
 
-```mermaid
-sequenceDiagram
-    participant User as User
-    participant SAuthApp as SAuth App (Mobile)
-    participant SAuthBackend as SAuth Backend (DataDome/Recaptcha)
+## Client Registration
 
-    User->>SAuthApp: Open SAuth App
-    alt DataDome/Recaptcha enabled and suspicious
-        SAuthBackend->>SAuthApp: Show challenge (CAPTCHA/DataDome)
-        SAuthApp->>User: User solves challenge
-        SAuthApp->>SAuthBackend: Submit challenge result
-    end
-    SAuthApp->>SAuthApp: Generate ed25519 key pair
-    SAuthApp->>SAuthBackend: Send public key, signature (with timestamp/device info), device info
-    SAuthBackend->>SAuthBackend: Verify signature, save device info & public key
-    SAuthBackend->>SAuthApp: Return device_id
-```
-
-## Note
-
-Device registration is secured by an encryption algorithm that is protected within both the mobile app and backend. Without knowledge of this encryption algorithm, device registration cannot be performed, ensuring only trusted devices can join the system.
+Each client registers with the SAuth Backend and receives a unique ClientID, ClientSecret, and an API key for webhook integration. These credentials are used to securely authenticate and manage communication between the client and backend, as well as to receive verification results via webhook.
 
 # Authenticate request
 
@@ -75,3 +51,27 @@ sequenceDiagram
 ## Note
 
 Verification (Step 8) can also be protected by a special data encryption layer, similar to device registration. Without knowledge of this encryption algorithm, performing verification becomes extremely difficult, ensuring only authorized parties can complete the process.
+
+# Register device
+
+```mermaid
+sequenceDiagram
+    participant User as User
+    participant SAuthApp as SAuth App (Mobile)
+    participant SAuthBackend as SAuth Backend (DataDome/Recaptcha)
+
+    User->>SAuthApp: Open SAuth App
+    alt DataDome/Recaptcha enabled and suspicious
+        SAuthBackend->>SAuthApp: Show challenge (CAPTCHA/DataDome)
+        SAuthApp->>User: User solves challenge
+        SAuthApp->>SAuthBackend: Submit challenge result
+    end
+    SAuthApp->>SAuthApp: Generate ed25519 key pair
+    SAuthApp->>SAuthBackend: Send public key, signature (with timestamp/device info), device info
+    SAuthBackend->>SAuthBackend: Verify signature, save device info & public key
+    SAuthBackend->>SAuthApp: Return device_id
+```
+
+## Note
+
+Device registration is secured by an encryption algorithm that is protected within both the mobile app and backend. Without knowledge of this encryption algorithm, device registration cannot be performed, ensuring only trusted devices can join the system.
