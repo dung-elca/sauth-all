@@ -1,4 +1,4 @@
-const HOST = "http://sg.dungnguyen.uk:3001";
+const HOST = "http://35.165.147.18:3001";
 
 let currentLotId = "your_lot_id_here";
 let checkInterval = null;
