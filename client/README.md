@@ -10,4 +10,4 @@
    ```sh
    node index.js
    ```
-3. Open http://35.165.147.18:3000 in your browser to see 'Hello World'.
+3. Open https://sauth.dungnguyen.uk in your browser to see 'Hello World'.

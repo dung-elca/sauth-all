@@ -14,7 +14,7 @@ The following sections (1, 2, 3, 4) illustrate a demo flow of the SAuth solution
 
 This section demonstrates how to configure and set up a specific client using the server admin tool, including authentication parameters, webhook API key for verification results, and other settings.
 
-[Demo Link](http://35.165.147.18:3000)
+[Demo Link](https://sauth.dungnguyen.uk)
 
 ![Server Admin Tool](img/server-admin-tool.png)
 
@@ -22,7 +22,7 @@ This section demonstrates how to configure and set up a specific client using th
 
 Clients can configure authentication parameters, QR code expiration time, webhook for verification results, and more.
 
-[Demo Link](http://35.165.147.18:3001/admin)
+[Demo Link](https://lottery.dungnguyen.uk/admin)
 
 ![Client Admin Tool](img/client-admin-tool.png)
 
@@ -30,7 +30,7 @@ Clients can configure authentication parameters, QR code expiration time, webhoo
 
 This is an example of a client who wants to participate in a lucky draw to buy football match tickets. The user is redirected to the authentication web page below:
 
-[Demo Link](http://35.165.147.18:3001)
+[Demo Link](https://lottery.dungnguyen.uk)
 
 ![Client Web](img/client-web.png)
 

@@ -6,7 +6,7 @@ const path = require("path");
 const { randomBytes } = require("crypto");
 
 const PORT = 3001;
-const SAUTH_SERVER_URL = "http://35.165.147.18:3000";
+const SAUTH_SERVER_URL = "https://sauth.dungnguyen.uk";
 
 const app = express();
 app.use(cors());

@@ -1,4 +1,4 @@
-const HOST = "http://35.165.147.18:3001";
+const HOST = "https://lottery.dungnguyen.uk";
 
 async function fetchConfigStatus() {
   try {
