@@ -131,4 +131,4 @@ class ApiClient {
   }
 }
 
-var apiClient = ApiClient('http://35.165.147.18:3000');
+var apiClient = ApiClient('https://sauth.dungnguyen.uk');
