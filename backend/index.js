@@ -6,6 +6,7 @@ import path from "path";
 import * as db from "./database.js";
 import { AESUtil, Ed25519Util } from "./my-crypto.js";
 
+const HOST = "https://sauth.dungnguyen.uk";
 const app = express();
 const PORT = 3000;
 app.use(cors());
@@ -114,7 +115,7 @@ app.post("/verify-request", (req, res) => {
   if (!request) return res.status(404).json({ error: "Client not found" });
 
   res.json({
-    url: `http://35.165.147.18:${PORT}/verify/${request.request_id}`,
+    url: `${HOST}/verify/${request.request_id}`,
     request_id: request.request_id,
   });
 });
