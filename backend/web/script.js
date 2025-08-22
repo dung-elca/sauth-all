@@ -227,7 +227,6 @@ class SAuthAdmin {
   }
 
   async updateClient(clientId, formData) {
-    console.log("Updating client:", clientId, formData);
     const response = await fetch(`${HOST}/client`, {
       method: "PUT",
       headers: {
