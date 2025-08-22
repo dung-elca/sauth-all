@@ -16,7 +16,7 @@ app.use(express.static("web"));
 
 const datadomeClient = new DatadomeExpress("KKCpsZoVErvnjFj");
 
-// --- Client APIs ---
+// --- Admin APIs ---
 app.post("/client", (req, res) => {
   const { name, webhook_url, enable_datadome, enable_recaptcha } = req.body;
   if (!name) return res.status(400).json({ error: "Missing name" });
@@ -81,6 +81,7 @@ app.delete("/client/:clientId", (req, res) => {
   }
 });
 
+// --- Client APIs ---
 app.post("/verify-request", (req, res) => {
   const clientId = req.header("client_id");
   const clientSecret = req.header("client_secret");
